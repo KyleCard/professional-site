@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kyle J. Card — Adaptive Walk (design preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  /* ---- landscape-derived palette (every value traced to Kyle's own imagery) ---- */
+  --paper:#ECE3D0;            /* warm sand / contour paper — the lowland ground */
+  --paper-cool:#E7E4D9;       /* faint cool wash for the lowest (foundational) stops */
+  --paper-warm:#F3E7CC;       /* warmer ground approaching the summit */
+  --ink:#222D2A;             /* dark slate-teal (colony shadow / terrain ink) — body text */
+  --ink-soft:#51605B;        /* secondary text */
+  --slate:#3C5A6A;           /* cool valley + his fitness-axis blue */
+  --teal:#1C6B57;            /* everyday accent + links — his contingency-plot data teal, deepened for AA */
+  --teal-deep:#124A3D;
+  --amber:#B97E14;           /* ochre upper slope (magma peak / colony gold) — large text only */
+  --amber-bright:#DE9F2A;    /* sunlit summit highlight — the peak word, used once */
+  --rule:#CBBFA6;            /* hairline on sand */
+  --focus:#1C6B57;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;overflow-x:hidden;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;font-weight:500}
+a{color:var(--teal);text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{color:var(--teal-deep)}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:3px;border-radius:2px}
+.skip{position:absolute;left:-999px;top:0;background:var(--ink);color:var(--paper);padding:.6rem 1rem;z-index:100}
+.skip:focus{left:12px;top:12px}
+
+/* ---- top bar: a field-station nameplate, not a portfolio nav ---- */
+.bar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;
+  padding:14px clamp(16px,4vw,40px);mix-blend-mode:multiply;pointer-events:none}
+.bar a,.bar span{pointer-events:auto}
+.bar .name{color:var(--ink);font-weight:500}
+.bar nav{display:flex;gap:22px}
+.bar nav a{color:var(--ink);text-decoration:none}
+.bar nav a:hover{color:var(--teal)}
+
+/* ---- terrain substrate: two stretched SVG layers spanning the whole document ---- */
+.terrain{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.terrain svg{position:absolute;inset:0;width:100%;height:100%}
+.bg-tint{position:absolute;inset:0;z-index:0;
+  background:linear-gradient(180deg,
+    var(--paper-cool) 0%, var(--paper) 30%, var(--paper) 52%, #EFE6D2 72%, var(--paper-warm) 100%);}
+.grain{position:absolute;inset:0;z-index:1;opacity:.5;pointer-events:none;mix-blend-mode:multiply;
+  background-image:radial-gradient(rgba(80,70,45,.05) .5px,transparent .5px);background-size:3px 3px}
+
+/* ---- node labels (HTML overlay so text isn't stretched by the terrain) ---- */
+.nodes{position:absolute;inset:0;z-index:3;pointer-events:none}
+.node-tag{position:absolute;transform:translate(14px,-50%);color:var(--slate);white-space:nowrap;
+  opacity:.0;transition:opacity .6s ease}
+.node-tag.lit{opacity:.92}
+.node-tag b{color:var(--teal);font-weight:500}
+
+/* ---- elevation / fitness gauge (fixed) — encodes the climb ---- */
+.gauge{position:fixed;left:clamp(14px,3.2vw,40px);top:50%;transform:translateY(-50%);z-index:30;
+  display:flex;gap:12px;align-items:stretch;height:min(60vh,440px);pointer-events:none}
+.gauge .track{position:relative;width:3px;background:linear-gradient(var(--rule),var(--rule));border-radius:3px}
+.gauge .fill{position:absolute;left:0;right:0;bottom:0;height:8%;
+  background:linear-gradient(0deg,var(--teal),var(--amber-bright));border-radius:3px;transition:height .15s linear}
+.gauge .tick{position:absolute;left:-4px;width:11px;height:1.5px;background:var(--rule)}
+.gauge .read{align-self:flex-end;display:flex;flex-direction:column;gap:2px;color:var(--ink-soft);transform:translateY(2px)}
+.gauge .read .val{font-size:1.05rem;letter-spacing:.06em;color:var(--ink);font-weight:500}
+.gauge .read .lab{color:var(--slate)}
+.gauge .axis{writing-mode:vertical-rl;transform:rotate(180deg);align-self:center;color:var(--slate);
+  letter-spacing:.34em;font-size:.62rem}
+
+/* ---- content ---- */
+main{position:relative;z-index:5}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.stop{min-height:96vh;display:flex;flex-direction:column;justify-content:center;padding:9vh 0}
+.stop .col{max-width:38rem}
+.stop.right .col{margin-left:auto}
+.eyebrow{display:flex;align-items:center;gap:12px;color:var(--slate);margin-bottom:22px}
+.eyebrow .dots{letter-spacing:.1em;color:var(--teal)}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* trailhead */
+.trailhead{min-height:100vh;justify-content:center}
+.lede{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:300;
+  font-size:clamp(2.6rem,7.4vw,6.6rem);line-height:.98;letter-spacing:-.02em;margin:0;color:var(--ink)}
+.lede .climb{display:block}
+.lede .verb{font-weight:500;font-style:italic}
+.lede .cure{color:var(--amber-bright);font-weight:600}
+.thesis{font-size:clamp(1.05rem,1.8vw,1.32rem);max-width:30rem;margin:30px 0 0;color:var(--ink-soft)}
+.who{margin-top:34px;display:flex;gap:14px;align-items:baseline;color:var(--slate)}
+.who .nm{color:var(--ink);font-weight:500;letter-spacing:.02em}
+
+/* stop titles */
+.title{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:400;
+  font-size:clamp(2rem,4.4vw,3.5rem);line-height:1.02;letter-spacing:-.015em;margin:0 0 8px;color:var(--ink)}
+.title .em{font-style:italic;color:var(--teal)}
+.kicker{font-family:"Fraunces",serif;font-weight:400;font-style:italic;color:var(--ink-soft);
+  font-size:clamp(1.15rem,2vw,1.5rem);margin:0 0 26px}
+.stop p{margin:0 0 18px}
+.stop p .sp{font-style:italic}
+
+/* the about/question stop: portrait anchored on the slope */
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(28px,5vw,64px);align-items:center;max-width:62rem}
+.split.right{margin-left:auto}
+.portrait{position:relative}
+.portrait img{width:100%;height:auto;display:block;border-radius:2px;filter:saturate(.92) contrast(1.02)}
+.portrait .ring{position:absolute;inset:-10px;border:1px solid var(--rule);border-radius:3px;pointer-events:none}
+.portrait figcaption{margin-top:10px;color:var(--slate)}
+.values{margin-top:22px;padding-left:18px;border-left:2px solid var(--teal);color:var(--ink-soft);font-size:.98rem}
+
+/* discovery stop: the schematic IS the peak being described */
+.figure{margin:30px 0 0;max-width:40rem}
+.figure .frame{background:#11151b;border-radius:3px;padding:14px;box-shadow:0 12px 36px -18px rgba(30,40,38,.5)}
+.figure img{width:100%;height:auto;display:block;border-radius:2px}
+.figure figcaption{margin-top:12px;color:var(--slate);display:flex;gap:10px;align-items:baseline}
+.papers{margin-top:26px;display:flex;flex-direction:column;gap:10px}
+.paper{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:baseline;
+  padding:14px 16px;border:1px solid var(--rule);border-radius:3px;background:rgba(255,253,247,.5);
+  text-decoration:none;color:var(--ink);transition:border-color .2s,background .2s}
+.paper:hover{border-color:var(--teal);background:rgba(255,253,247,.85)}
+.paper .el{color:var(--amber);font-weight:500}
+.paper .jr{color:var(--ink);font-weight:500}
+.paper .jr .it{font-style:italic;color:var(--ink-soft);font-weight:400}
+.paper .go{color:var(--teal)}
+
+footer{position:relative;z-index:5;padding:60px 0;color:var(--slate);text-align:center}
+
+/* ---- responsive: the walk becomes a vertical spine ---- */
+@media (max-width:760px){
+  body{font-size:16px}
+  .gauge{height:auto;top:auto;bottom:14px;left:0;right:0;transform:none;flex-direction:row;justify-content:center;
+    gap:10px;background:linear-gradient(0deg,var(--paper),transparent);padding:14px 16px 10px}
+  .gauge .track{width:120px;height:3px}
+  .gauge .fill{top:0;bottom:0;left:0;height:auto;width:8%;
+    background:linear-gradient(90deg,var(--teal),var(--amber-bright))}
+  .gauge .axis{writing-mode:horizontal-tb;transform:none;letter-spacing:.2em}
+  .gauge .tick{display:none}
+  .split{grid-template-columns:1fr;gap:24px}
+  .stop .col,.split{max-width:100%}
+  .node-tag{display:none}
+  .bar nav{display:none}
+}
+
+/* ---- reduced motion: full path drawn, everything legible & in order ---- */
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .node-tag{opacity:.92;transition:none}
+  .gauge .fill{transition:none}
+  .trajectory-draw{stroke-dashoffset:0 !important}
+  .climber{display:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#trailhead">Skip to content</a>
+
+<div class="bar" aria-hidden="false">
+  <span class="name mono">Kyle&nbsp;J.&nbsp;Card · field&nbsp;notes</span>
+  <nav class="mono" aria-label="Sections">
+    <a href="#">CV</a><a href="#">Publications</a><a href="#">Blog</a><a href="#">Contact</a>
+  </nav>
+</div>
+
+<!-- terrain substrate -->
+<div class="bg-tint" aria-hidden="true"></div>
+<div class="terrain" aria-hidden="true">
+  <svg id="contours" viewBox="0 0 1240 3000" preserveAspectRatio="none"></svg>
+  <svg id="trail" viewBox="0 0 1240 3000" preserveAspectRatio="none"></svg>
+</div>
+<div class="grain" aria-hidden="true"></div>
+<div class="nodes" id="nodelabels" aria-hidden="true"></div>
+
+<!-- elevation / fitness gauge -->
+<div class="gauge" aria-hidden="true">
+  <div class="axis mono">Fitness&nbsp;→&nbsp;translation</div>
+  <div class="track" id="track"><div class="fill" id="gfill"></div></div>
+  <div class="read mono">
+    <span class="val" id="gval">0.06</span>
+    <span class="lab" id="glab">Trailhead</span>
+  </div>
+</div>
+
+<main id="main">
+
+  <!-- STOP 0 · TRAILHEAD -->
+  <section class="stop trailhead" id="trailhead" aria-labelledby="th-h">
+    <div class="wrap">
+      <p class="eyebrow mono reveal"><span class="dots">▽</span> Trailhead · elev. 60 m · the widest view</p>
+      <h1 class="lede reveal" id="th-h">
+        <span class="climb"><span class="verb">Predict.</span></span>
+        <span class="climb"><span class="verb">Control.</span></span>
+        <span class="climb"><span class="cure">Cure.</span></span>
+      </h1>
+      <p class="thesis reveal">Exploring the genetic and ecological factors driving antibiotic resistance — and
+        pioneering new technologies to design effective, evolution-inspired therapeutic strategies.</p>
+      <p class="who mono reveal"><span class="nm">Kyle&nbsp;Card,&nbsp;Ph.D.</span> · HHMI Hanna H. Gray Postdoctoral Fellow</p>
+    </div>
+  </section>
+
+  <!-- STOP 1 · THE CENTRAL QUESTION -->
+  <section class="stop right" id="question" aria-labelledby="q-h">
+    <div class="wrap">
+      <div class="split right">
+        <div class="col reveal">
+          <p class="eyebrow mono"><span class="dots">△▽</span> Stop 01 · the central question</p>
+          <h2 class="title" id="q-h">Can we read evolution<br><span class="em">before</span> it happens?</h2>
+          <p>I am dedicated to understanding and combating antibiotic resistance. My research combines experimental
+            evolution, functional genomics, and computational modeling to identify the genetic and environmental
+            factors that drive resistance — to predict and guide the evolutionary trajectories of pathogens, and
+            ultimately improve treatment outcomes.</p>
+          <div class="values">
+            I am a disabled scientist born with Moebius syndrome, a rare neurological condition, along with several
+            limb differences. My identity as a disabled person has enriched my academic life: our curiosity about the
+            natural world binds us together, each of us has a story that should be respected, and we all deserve a
+            voice in science.
+          </div>
+        </div>
+        <figure class="portrait reveal">
+          <div class="ring"></div>
+          <img src="assets/card-portrait.jpg" alt="Portrait of Kyle J. Card" />
+          <figcaption class="mono">Cleveland, OH · 41.50°N 81.62°W</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- STOP 2 · DISCOVERY: HISTORY & CONTINGENCY -->
+  <section class="stop" id="history" aria-labelledby="h-h">
+    <div class="wrap">
+      <div class="col reveal">
+        <p class="eyebrow mono"><span class="dots">△△▽</span> Stop 02 · discovery · elev. 980 m</p>
+        <h2 class="title" id="h-h">History <span class="em">matters.</span></h2>
+        <p class="kicker">A population's past quietly decides which peaks it can still reach.</p>
+        <p>As an HHMI Gilliam Fellow, I investigated how a bacterium's prior history influences its ability to evolve
+          antibiotic resistance. Using <span class="sp">E.&nbsp;coli</span> strains from the Long-Term Evolution
+          Experiment, we found that genomic differences between lines can unpredictably alter resistance — and channel
+          evolution down particular mutational pathways.</p>
+        <figure class="figure">
+          <div class="frame"><img src="assets/landscape-correlated.png"
+            alt="Correlated and anti-correlated fitness landscapes: cool valleys rising to warm adaptive peaks, with genotype and fitness axes." /></div>
+          <figcaption class="mono"><span>Fig. 01–02</span> · correlated fitness landscapes · Card&nbsp;et&nbsp;al.</figcaption>
+        </figure>
+        <div class="papers">
+          <a class="paper" href="#"><span class="el mono">▲ 980&nbsp;m</span>
+            <span class="jr">Evolutionary divergence channels resistance · <span class="it">PLoS Biology</span></span>
+            <span class="go mono">read →</span></a>
+          <a class="paper" href="#"><span class="el mono">▲ 1120&nbsp;m</span>
+            <span class="jr">History constrains adaptation · <span class="it">PNAS</span> 2016886118</span>
+            <span class="go mono">read →</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mono">↑ the climb continues — staph collateral sensitivity · the future lab · Evolution-on-a-Chip · the team</footer>
+</main>
+
+<script src="terrain.js"></script>
+<script>
+(function(){
+  const T = window.TERRAIN;
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const VW = T.width, VH = T.height;
+
+  // --- contour color ramp by elevation t: cool slate → teal → warm ochre (low contrast) ---
+  function lerp(a,b,t){return a+(b-a)*t}
+  function mix(c1,c2,t){return c1.map((v,i)=>Math.round(lerp(v,c2[i],t)))}
+  const COOL=[110,133,149], MIDC=[94,143,126], WARM=[201,154,78];
+  function contourColor(t){
+    const c = t<.5 ? mix(COOL,MIDC,t/.5) : mix(MIDC,WARM,(t-.5)/.5);
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+  // build contour paths
+  const cEl = document.getElementById("contours");
+  let html="";
+  T.paths.forEach(p=>{
+    const t=p.t;
+    const op = (0.14 + 0.34*t).toFixed(3);                 // higher land reads stronger
+    const w  = t>0.66 ? 1.5 : 1.1;
+    html += `<path d="${p.d}" fill="none" stroke="${contourColor(t)}" stroke-width="${w}" `
+          + `stroke-opacity="${op}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`;
+  });
+  cEl.innerHTML = html;
+
+  // --- trajectory: smooth Catmull-Rom through the node peaks ---
+  const N = T.nodes;
+  function cr(pts){
+    if(pts.length<2) return "";
+    let d=`M ${pts[0].x} ${pts[0].y}`;
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[i-1]||pts[i], p1=pts[i], p2=pts[i+1], p3=pts[i+2]||p2;
+      const c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6;
+      const c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
+      d+=` C ${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`;
+    }
+    return d;
+  }
+  const trailEl=document.getElementById("trail");
+  const dPath=cr(N);
+  trailEl.innerHTML=`
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+        <stop offset="0" stop-color="#3C5A6A"/><stop offset=".5" stop-color="#1C6B57"/>
+        <stop offset="1" stop-color="#DE9F2A"/>
+      </linearGradient>
+    </defs>
+    <path id="trailbase" d="${dPath}" fill="none" stroke="#8a7e60" stroke-opacity=".5"
+          stroke-width="1.6" stroke-dasharray="1 8" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <path id="trailhalo" class="trajectory-draw" d="${dPath}" fill="none" stroke="url(#tg)" stroke-opacity=".16"
+          stroke-width="8" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <path id="traildraw" class="trajectory-draw" d="${dPath}" fill="none" stroke="url(#tg)"
+          stroke-width="3.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    ${N.map(n=>`<g class="peakmark"><circle cx="${n.x}" cy="${n.y}" r="15" fill="none" stroke="#1C6B57" stroke-opacity=".4" stroke-width="1.2" vector-effect="non-scaling-stroke"/><circle cx="${n.x}" cy="${n.y}" r="8.5" fill="none" stroke="#1C6B57" stroke-opacity=".7" stroke-width="1.4" vector-effect="non-scaling-stroke"/><circle cx="${n.x}" cy="${n.y}" r="3.6" fill="#1C6B57"/></g>`).join("")}
+    <circle id="climber" class="climber" r="7" fill="#DE9F2A" stroke="#fffdf7" stroke-width="2.5" vector-effect="non-scaling-stroke" cx="${N[0].x}" cy="${N[0].y}"/>
+  `;
+  const draw=document.getElementById("traildraw");
+  const halo=document.getElementById("trailhalo");
+  const climber=document.getElementById("climber");
+  const len=draw.getTotalLength();
+  [draw,halo].forEach(el=>{el.style.strokeDasharray=len; el.style.strokeDashoffset=reduce?0:len;});
+
+  // --- node labels overlay (percentage positioned, unstretched) ---
+  const labels=["Trailhead — the open question","<b>History</b> &amp; contingency","From models to <b>pathogens</b>","The summit — <b>Evolution-on-a-Chip</b>"];
+  const nl=document.getElementById("nodelabels");
+  nl.innerHTML=N.map((n,i)=>`<div class="node-tag mono" data-i="${i}" style="left:${(n.x/VW*100).toFixed(2)}%;top:${(n.y/VH*100).toFixed(2)}%">${labels[i]||n.label}</div>`).join("");
+  const tags=[...nl.querySelectorAll(".node-tag")];
+
+  // --- gauge + scroll progress ---
+  const gfill=document.getElementById("gfill"), gval=document.getElementById("gval"), glab=document.getElementById("glab");
+  const stops=[...document.querySelectorAll(".stop")];
+  const stopMeta=[{v:.06,l:"Trailhead"},{v:.34,l:"The question"},{v:.62,l:"Contingency"}];
+  function onScroll(){
+    const sc=window.scrollY, max=document.body.scrollHeight-window.innerHeight;
+    const p=Math.min(1,Math.max(0,sc/(max||1)));
+    if(!reduce){
+      const off=len*(1-p);
+      draw.style.strokeDashoffset=off; halo.style.strokeDashoffset=off;
+      const pt=draw.getPointAtLength(len*p);
+      climber.setAttribute("cx",pt.x); climber.setAttribute("cy",pt.y);
+    }
+    // gauge fill + readout (eased toward summit)
+    const fitness=(0.06+0.94*Math.pow(p,1.04));
+    gfill.style.height=(6+ p*92).toFixed(1)+"%";
+    gval.textContent=fitness.toFixed(2);
+    const idx=Math.min(stopMeta.length-1,Math.round(p*(stopMeta.length-1)));
+    glab.textContent=stopMeta[idx].l;
+    // light the nearest node tag
+    tags.forEach((t,i)=>{ t.classList.toggle("lit", Math.abs(p-(N[i].y/VH))<0.14); });
+  }
+  let ticking=false;
+  addEventListener("scroll",()=>{if(!ticking){requestAnimationFrame(()=>{onScroll();ticking=false});ticking=true}},{passive:true});
+  onScroll();
+
+  // --- reveals ---
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")})},{threshold:.18,rootMargin:"0px 0px -8% 0px"});
+  document.querySelectorAll(".reveal").forEach(el=>{reduce?el.classList.add("in"):io.observe(el)});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+---
+import { Image } from "astro:assets";
+import yaml from "js-yaml";
+import teamYaml from "../data/team.yaml?raw";
+
+interface Member { order: number; name: string; role: string; org: string; photo: string; bio: string; }
+const data = yaml.load(teamYaml) as { members: Member[] };
+const members = [...data.members].sort((a, b) => a.order - b.order);
+
+// resolve photos for astro:assets optimization (data-driven — drop a file in assets/team/)
+const photos = import.meta.glob<{ default: ImageMetadata }>("../../assets/team/*.{jpeg,jpg,png,webp}", { eager: true });
+const photoFor = (file: string) =>
+  Object.entries(photos).find(([p]) => p.endsWith("/" + file))?.[1].default;
+
+// *text* → <i>text</i> (species names)
+const italicize = (s: string) => s.replace(/\*([^*]+)\*/g, "<i>$1</i>");
+
+// initials for the contour-marker placeholder when no photo is supplied
+const initials = (n: string) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+---
+<ul class="team" role="list">
+  {members.map((m) => {
+    const img = photoFor(m.photo);
+    return (
+      <li class="member reveal">
+        <div class="photo">
+          {img ? (
+            <Image src={img} alt={`${m.name}, ${m.role}`} width={280} height={280} class="ph" />
+          ) : (
+            <span class="placeholder" aria-hidden="true">{initials(m.name)}</span>
+          )}
+        </div>
+        <h3 class="nm">{m.name}</h3>
+        <p class="role mono">{m.role}{m.org ? ` · ${m.org}` : ""}</p>
+        <p class="bio" set:html={italicize(m.bio)} />
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .team { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-5) var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .member { display: flex; flex-direction: column; }
+  .photo { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden;
+    background: var(--paper-panel); border: 1px solid var(--rule); margin-bottom: var(--s-2); }
+  .ph { width: 100%; height: 100%; object-fit: cover; filter: saturate(.94) contrast(1.02); }
+  .placeholder { position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: var(--font-display); font-size: 2.4rem; color: var(--teal); background:
+    repeating-linear-gradient(135deg, var(--paper-panel) 0 9px, var(--paper) 9px 18px); }
+  .nm { font-size: var(--t-h3); margin-bottom: 2px; }
+  .role { color: var(--slate); margin-bottom: var(--s-2); }
+  .bio { color: var(--ink-soft); font-size: .96rem; line-height: 1.6; }
+</style>

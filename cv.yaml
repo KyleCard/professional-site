@@ -1,0 +1,457 @@
+# Structured CV — transcribed from Card_-_Faculty_Package_-_URochester.pdf
+# (CV section, pages 3–9). Drives the /cv page. Update this file + drop a new
+# PDF in public/cv/ (and bump CV_PDF in src/data/site.ts) to keep them in sync.
+#
+# Conventions:
+#   *text*  -> rendered italic (species + journal names)
+#   authors: role: first|senior highlights Kyle (tan/blue); mentee: true
+#            underlines a direct mentee; equal: true appends the "*".
+
+header:
+  name: "Kyle J. Card, Ph.D."
+  title: "HHMI Hanna H. Gray Postdoctoral Fellow"
+  org: "Cleveland Clinic Research"
+  address: "9500 Euclid Ave., Cleveland, OH 44195"
+  phone: "517-643-1747"
+  email: "cardkyle1@gmail.com"
+  website: "kylejcard.com"
+
+sections:
+  - id: "education"
+    title: "Education and Training"
+    kind: "timeline"
+    items:
+      - date: "2020 – Present"
+        title: "Postdoctoral Research Fellow"
+        org: "Cleveland Clinic Research"
+        detail: "Department of Genomic Sciences and Systems Biology | Advisor: Dr. Jacob Scott"
+      - date: "2014 – 2020"
+        title: "Ph.D. in Microbiology & Molecular Genetics and Ecology, Evolutionary Biology & Behavior"
+        org: "Michigan State University"
+        lines:
+          - "Department of Microbiology & Molecular Genetics"
+          - "Dissertation Title: The Effects of Genetic Background on the Evolution of Antibiotic Resistance and Its Fitness Costs"
+          - "Advisor: Dr. Richard Lenski"
+      - date: "2011 – 2013"
+        title: "B.S. with Honors in Microbiology"
+        org: "Michigan State University"
+
+  - id: "additional-research"
+    title: "Additional Research Experience"
+    kind: "timeline"
+    items:
+      - date: "2012 – 2014"
+        title: "Undergraduate and Postbaccalaureate Research"
+        org: "Michigan State University"
+        detail: "Department of Microbiology & Molecular Genetics | Advisor: Dr. Frank Dazzo"
+
+  - id: "publications"
+    title: "Peer-Reviewed Publications"
+    kind: "publications"
+    stats:
+      citations: "575"
+      hIndex: "7"
+      asOf: "Google Scholar, as of June 26, 2026"
+    items:
+      - authors:
+          - { name: "Card K.J.", role: "first", equal: true }
+          - { name: "Crozier D.", mentee: true, equal: true }
+          - "Durmaz A."
+          - "Gray J."
+          - { name: "Creary J.", mentee: true }
+          - { name: "Stocks A.", mentee: true }
+          - "Maltas J."
+          - "Bonomo R.A."
+          - "Burke Z.D.C."
+          - "Scott J.G."
+        title: "Evolution under vancomycin selection drives divergent collateral sensitivity patterns in *Staphylococcus aureus*."
+        journal: "Proceedings of the National Academy of Sciences"
+        volume: "122"
+        article: "e2507962122"
+        year: "2025"
+        doi: "https://doi.org/10.1073/pnas.2507962122"
+      - authors:
+          - { name: "Gopalakrishnan V.", equal: true }
+          - { name: "Crozier D.", mentee: true, equal: true }
+          - { name: "Card K.J.", role: "first", equal: true }
+          - "Krishnan N.P."
+          - "McClure E."
+          - "Pelesko J."
+          - "Williamson D.F.K."
+          - "Webster N."
+          - "Nichol D."
+          - "Mandal S."
+          - "Bonomo R.A."
+          - "Scott J.G."
+        title: "Science Forum: A low-cost, open-source evolutionary bioreactor and its educational use."
+        journal: "eLife"
+        volume: "11"
+        article: "e83067"
+        year: "2022"
+        doi: "https://doi.org/10.7554/eLife.83067"
+      - authors:
+          - { name: "Jordan J.A.", mentee: true }
+          - "Lenski R.E."
+          - { name: "Card K.J.", role: "senior" }
+        title: "Idiosyncratic fitness costs of ampicillin-resistant mutants derived from a long-term experiment with *Escherichia coli*."
+        journal: "Antibiotics"
+        volume: "11"
+        article: "347"
+        year: "2022"
+        doi: "https://doi.org/10.3390/antibiotics11030347"
+      - authors:
+          - "Weaver D.T."
+          - "McElvany B.D."
+          - "Gopalakrishnan V."
+          - { name: "Card K.J." }
+          - "Crozier D."
+          - "Dhawan A."
+          - "Dinh M.N."
+          - "Dolson E."
+          - "Farrokhian N."
+          - "Hitomi M."
+          - "Ho E."
+          - "Jagdish T."
+          - "King E.S."
+          - "Cadnum J.F."
+          - "Donskey C.J."
+          - "Krishnan N."
+          - "Kuzmin G."
+          - "Li J."
+          - "Maltas J."
+          - "Mo J."
+          - "Pelesko J."
+          - "Scarborough J.A."
+          - "Sedor G."
+          - "Tian E."
+          - "An G.C."
+          - "Diehl S."
+          - "Scott J.G."
+        title: "UV decontamination of personal protective equipment with idle laboratory biosafety cabinets during the COVID-19 pandemic."
+        journal: "PLoS One"
+        volume: "16"
+        article: "e0241734"
+        year: "2021"
+        doi: "https://doi.org/10.1371/journal.pone.0241734"
+      - authors:
+          - { name: "Card K.J.", role: "first" }
+          - { name: "Jordan J.A.", mentee: true }
+          - "Lenski R.E."
+        title: "Idiosyncratic variation in the fitness costs of tetracycline-resistance mutations in *Escherichia coli*."
+        journal: "Evolution"
+        volume: "75"
+        article: "1230–1238"
+        year: "2021"
+        doi: "https://doi.org/10.1111/evo.14203"
+      - authors:
+          - { name: "Card K.J.", role: "first" }
+          - "Thomas M."
+          - "Graves J.L."
+          - "Barrick J.E."
+          - "Lenski R.E."
+        title: "Genomic evolution of antibiotic resistance is contingent on genetic background following a long-term experiment with *Escherichia coli*."
+        journal: "Proceedings of the National Academy of Sciences"
+        volume: "118"
+        article: "e2016886118"
+        year: "2021"
+        doi: "https://doi.org/10.1073/pnas.2016886118"
+      - authors:
+          - { name: "Card K.J.", role: "first" }
+          - { name: "LaBar T." }
+          - { name: "Gomez J.B.", mentee: true }
+          - "Lenski R.E."
+        title: "Historical contingency in the evolution of antibiotic resistance after decades of relaxed selection."
+        journal: "PLoS Biology"
+        volume: "17"
+        article: "e3000397"
+        year: "2019"
+        doi: "https://doi.org/10.1371/journal.pbio.3000397"
+      - authors:
+          - "Lenski R.E."
+          - "Wiser M.J."
+          - "Blount Z.D."
+          - "Nahum J.R."
+          - "Morris J.J."
+          - "Zaman L."
+          - "Turner C.B."
+          - "Wade B.D."
+          - "Maddamsetti R."
+          - "Burmeister A.R."
+          - "Baird E.J."
+          - "Bundy J."
+          - "Grant N.A."
+          - { name: "Card K.J." }
+          - "Rowles M."
+          - "Weatherspoon K."
+          - "Papoulis S.E."
+          - "Sullivan R."
+          - "Clark C."
+          - "Mulka J.S."
+          - "Hajela N."
+        title: "Sustained fitness gains and variability in fitness trajectories in the long-term evolution experiment with *Escherichia coli*."
+        journal: "Proceedings of the Royal Society London B"
+        volume: "282"
+        article: "20152292"
+        year: "2015"
+        doi: "https://doi.org/10.1098/rspb.2015.2292"
+      - authors:
+          - "Ji Z."
+          - { name: "Card K.J." }
+          - "Dazzo F.B."
+        title: "CMEIAS JFrad: A digital computing tool to discriminate the fractal geometry of landscape architectures and spatial patterns of individual cells in microbial biofilms."
+        journal: "Microbial Ecology"
+        volume: "69"
+        article: "710–720"
+        year: "2015"
+        doi: "https://doi.org/10.1007/s00248-014-0495-1"
+
+  - id: "fellowships"
+    title: "Fellowships, Grants, and Awards"
+    kind: "timeline"
+    items:
+      - date: "2021 – Present"
+        title: "Hanna H. Gray Fellowship"
+        org: "Howard Hughes Medical Institute (HHMI)"
+        note: "Postdoctoral award phase: $514,000 in salary and research support | Faculty award phase: $1.48 million in direct research support and $280,000 in indirect costs over four years | HHMI will provide four years of complete funding, covering salary and benefits, to Gilliam Fellows who decide to pursue a postdoctoral position in my lab."
+      - date: "2020 – 2021"
+        title: "Diversity Supplement"
+        org: "National Cancer Institute (NIH/NCI)"
+      - date: "2020"
+        title: "Ralph Evans Award"
+        org: "Department of Microbiology & Molecular Genetics | Michigan State University"
+      - date: "2019 – 2020"
+        title: "BEACON Center Grant"
+        org: "National Science Foundation (NSF)"
+        detail: "Lenski R.E., Grant N.A., Card K.J., Bundy J. — BEACON’s Legacy of Research and Diversity in the Long-Term Evolution Experiment"
+        amount: "Funded: $89,999"
+      - date: "2019"
+        title: "Russell B. DuVall Scholar Award"
+        org: "Department of Microbiology & Molecular Genetics | Michigan State University"
+      - date: "2018 – 2019"
+        title: "BEACON Center Grant"
+        org: "National Science Foundation (NSF)"
+        detail: "Grant N.A., Card K.J., Lenski R.E., Thomas M., Graves J.L. — Correlated Responses in Metabolism and Antibiotic Resistance in the LTEE."
+        amount: "Funded: $94,583"
+      - date: "2017 – 2020"
+        title: "Gilliam Fellowship for Advanced Study"
+        org: "Howard Hughes Medical Institute (HHMI)"
+        amount: "$138,000"
+      - date: "2017"
+        title: "Rudolf Hugh Scholarship Award"
+        org: "Department of Microbiology & Molecular Genetics | Michigan State University"
+      - date: "2016 – 2017"
+        title: "BEACON Center Grant"
+        org: "National Science Foundation (NSF)"
+        detail: "Connelly B., Card K.J., Kerr B., Lenski R.E., Zaman L. — An Empirical Test of the Evolution of Cooperation by the Hankshaw Effect"
+        amount: "Funded: $79,791"
+      - date: "2013"
+        title: "William S. Sayer Award"
+        org: "Department of Microbiology & Molecular Genetics | Michigan State University"
+
+  - id: "presentations"
+    title: "Contributed Presentations"
+    kind: "presentations"
+    items:
+      - { year: "2026", venue: "Evolution Conference", type: "Selected Talk" }
+      - { year: "2026", venue: "HHMI Investigator Meeting", type: "Poster" }
+      - { year: "2026", venue: "Vaughn Cooper Lab Seminar | University of Pittsburgh", type: "Invited Talk" }
+      - { year: "2025", venue: "Department of Biology Seminar | Case Western Reserve University", type: "Invited Talk" }
+      - { year: "2025", venue: "HHMI Investigator Meeting", type: "Poster" }
+      - { year: "2024", venue: "HHMI Investigator Meeting", type: "Poster" }
+      - { year: "2023", venue: "Microbial Population Biology Gordon Research Conference", type: "Poster" }
+      - { year: "2023", venue: "HHMI Investigator Meeting", type: "Poster" }
+      - { year: "2022", venue: "Meetings in Ecology and Evolution: Evolutionary Dynamics and Processes", type: "Poster" }
+      - { year: "2022", venue: "Ecology and Evolution Graduate Program Seminar | University of Pittsburgh", type: "Invited Talk" }
+      - { year: "2022", venue: "HHMI Investigator Meeting: Microbes and the Host Response", type: "Poster" }
+      - { year: "2021", venue: "BEACON Congress | Michigan State University", type: "Selected Talk" }
+      - { year: "2021", venue: "Case Comprehensive Center Annual Scientific Retreat", type: "Poster" }
+      - { year: "2021", venue: "Evolution Conference", type: "Selected Talk" }
+      - { year: "2021", venue: "Club Evolutionary Medicine Seminar Series | Duke University", type: "Invited Talk" }
+      - { year: "2019", venue: "Ecology and Evolutionary Biology (EEB) Department Seminar | University of Michigan", type: "Invited Talk" }
+      - { year: "2019", venue: "Microbial Population Biology Gordan Research Seminar", type: "Selected Talk" }
+      - { year: "2019", venue: "Microbial Population Biology Gordon Research Conference", type: "Poster" }
+      - { year: "2019", venue: "Molecular Mechanisms in Evolution Gordon Research Seminar", type: "Selected Talk" }
+      - { year: "2019", venue: "Molecular Mechanisms in Evolution Gordon Research Conference", type: "Poster" }
+      - { year: "2019", venue: "Ecology, Evolutionary Biology, and Behavior (EEBB) Colloquium Seminar", type: "Selected Talk" }
+      - { year: "2018", venue: "BEACON NSF Site Visit", type: "Poster" }
+      - { year: "2018", venue: "Gilliam Annual Fellows Meeting", type: "Poster" }
+      - { year: "2018", venue: "BEACON Congress", type: "Selected Talk" }
+      - { year: "2018", venue: "Population, Evolution, and Quantitative Genetics Conference", type: "Poster" }
+      - { year: "2018", venue: "Midwest Ecology and Evolution Conference", type: "Selected Talk" }
+      - { year: "2017", venue: "BEACON NSF Site Visit | Michigan State University", type: "Invited Talk" }
+      - { year: "2017", venue: "Gilliam Annual Fellows Meeting", type: "Poster" }
+      - { year: "2017", venue: "Ecology, Evolutionary Biology, and Behavior (EEBB) Colloquium Seminar", type: "Selected Talk" }
+      - { year: "2017", venue: "Midwest Ecology and Evolution Conference", type: "Selected Talk" }
+      - { year: "2015", venue: "BEACON Congress", type: "Poster" }
+      - { year: "2013", venue: "University Undergraduate Research and Arts Forum", type: "Poster" }
+
+  - id: "teaching"
+    title: "Teaching Experience"
+    kind: "timeline"
+    items:
+      - date: "2022"
+        title: "Guest Lecturer – Genes, Evolution, and Ecology"
+        org: "CWRU"
+        note: "Dr. Arvid Ågren invited me to guest lecture on experimental evolution for his freshman-level biology course, “Genes, Evolution, and Ecology.” I discussed how experimental evolution emerged contemporaneously with Darwin as a direct challenge to gradualism and a complementary approach to the comparative method. I also introduced the *E. coli* Long-Term Evolution Experiment to the students and highlighted several key studies. Lastly, I presented on contingency, first in the context of human history and then its implications in the evolution of drug resistance."
+      - date: "2016"
+        title: "Teaching Assistant – Fundamentals of Microbiology"
+        org: "MSU"
+      - date: "2015"
+        title: "Teaching Assistant – Advanced Microbiology Laboratory"
+        org: "MSU"
+
+  - id: "mentorship"
+    title: "Mentorship"
+    kind: "mentorship"
+    legendNote: "* Led to co-authored paper(s)"
+    items:
+      - { date: "2026 – Present", name: "Drew Sager", level: "Undergraduate", institution: "Notre Dame University" }
+      - { date: "2026 – Present", name: "Brandon Kakuda", level: "Undergraduate", institution: "CWRU" }
+      - { date: "2025 – Present", name: "Aryan Agarwal", level: "High School Student" }
+      - { date: "2025 – Present", name: "Rohan Desai", level: "Undergraduate", institution: "Vanderbilt University" }
+      - { date: "2025 – Present", name: "Shiva Ayyar", level: "Undergraduate", institution: "CWRU" }
+      - { date: "2024 – Present", name: "Justin Creary", level: "Postbaccalaureate", institution: "Cleveland Clinic", coauthor: true }
+      - { date: "2024 – Present", name: "Amira Stocks", level: "Undergraduate", institution: "CWRU", coauthor: true }
+      - { date: "2022 – 2023", name: "Donovan Wu", level: "Undergraduate", institution: "CWRU" }
+      - { date: "2022", name: "Ashwin Balakrishnan", level: "High School Student", institution: "Hawken Upper School" }
+      - { date: "2021 – 2023", name: "Dena Crozier", level: "Medical Student", institution: "CWRU", coauthor: true }
+      - { date: "2019 – 2022", name: "Jalin Jordan", level: "Undergraduate", institution: "MSU", coauthor: true }
+      - { date: "2016 – 2017", name: "Thomas LaBar", level: "Doctoral Student", institution: "MSU", coauthor: true }
+      - { date: "2016 – 2019", name: "Jasper Gomez", level: "Undergraduate", institution: "MSU", coauthor: true }
+      - { date: "2015", name: "Tanush Jagdish", level: "Undergraduate", institution: "Kalamazoo College" }
+      - { date: "2015", name: "Lucas Warner", level: "Undergraduate", institution: "MSU" }
+      - { date: "2014", name: "Jacob Wright", level: "Undergraduate", institution: "MSU" }
+
+  - id: "professional-development"
+    title: "Professional Development"
+    kind: "timeline"
+    items:
+      - date: "2018 – 2019"
+        title: "Internship at the Michigan Department of Health and Human Services"
+        org: "Infectious Disease Division"
+      - date: "2017 – 2020"
+        title: "Broadening Experiences in Scientific Training (BEST) Trainee"
+
+  - id: "service"
+    title: "Service and Outreach"
+    kind: "service"
+    reviews:
+      journals:
+        - "The American Naturalist"
+        - "Ecology and Evolution"
+        - "eLife"
+        - "Evolution, Medicine, and Public Health"
+        - "G3"
+        - "mSphere"
+        - "mSystems"
+        - "Nature Communications"
+        - "Nature Microbiology"
+        - "npj Antimicrobials and Resistance"
+        - "PLoS Computational Biology"
+        - "PLoS Pathogens"
+        - "PNAS"
+        - "Science Advances"
+        - "Scientific Reports"
+      adhoc:
+        - "NSF BEACON Center"
+        - "Swiss National Science Foundation"
+        - "UK Research and Innovation"
+    items:
+      - date: "2026 – Present"
+        title: "Rare Neurological Disorder Foundation (RNDF) Advisory Board Member"
+        body: "As a member of the Clinical & Neuroscience Council, I provide strategic insights, sector expertise, and governance guidance during RNDF’s redevelopment and national expansion. We advise on organizational structure, program development, fellowship curriculum refinement, national partnership strategy, governance standards, and ethical oversight."
+      - date: "2023 – Present"
+        title: "Scientific Officer for Rise Up: Northeast Ohio"
+        body: "I evaluate high school student proposals and develop experiments for in-class research projects."
+      - date: "2021"
+        title: "Experimental Evolution Session Chair and Moderator"
+        org: "Evolution Conference"
+      - date: "2019 – 2020"
+        title: "Diversity, Equity, and Inclusion Task Force Member"
+        org: "American Society for Microbiology (ASM)"
+        body: "I was a member of a blue-ribbon Task Force with the charge to elevate and embody inclusive diversity with equity within the ASM. To this end, we comprehensively reviewed current policies and procedures to identify deficiencies within the Society that hinder DEI efforts; contracted and worked with a third-party DEI consultant – the Kaleidoscope Group – to develop a Member Perception Survey; and advanced guiding principles and vision statements to direct future work and activities, along with codifying benchmarks for success. We reported our findings and recommendations in a report presented to the Board of Directors."
+      - date: "2019 – 2020"
+        title: "Member of the Select Group for Graduate Curriculum Redesign"
+        body: "Participated in the strategic planning process for the Microbiology & Molecular Genetics Department at Michigan State University, focusing on curriculum redesign. The committee members and I advocated for a shift away from a curriculum focused on teaching facts to one that emphasizes critical thinking, the nature, practice, and philosophy of science, and epistemological thinking. We met with department leaders to discuss introducing a new course, modeled after the R3 Initiative at Johns Hopkins. My colleague, Dr. Zachary Blount, now leads this initiative as the Director of Graduate Education Innovation."
+      - date: "2018"
+        title: "Department of Microbiology & Molecular Genetics Host for Seminar Speaker Adam Lauring"
+        org: "Michigan State University"
+      - date: "2018"
+        title: "Department of Microbiology & Molecular Genetics Host for Seminar Speaker Michael Baym"
+        org: "Michigan State University"
+      - date: "2017 – 2019"
+        title: "Darwin Discovery Day Volunteer"
+        body: "I taught the public about experimental evolution and the Long-Term Evolution Experiment (LTEE) at the Michigan State University Museum."
+      - date: "2017"
+        title: "Department of Microbiology & Molecular Genetics Student Coordinator for Faculty Candidate, Dr. Jeffrey Barrick"
+        org: "Michigan State University"
+      - date: "2015 – 2020"
+        title: "BioMolecular Science Gateway Program Recruitment"
+        org: "Michigan State University"
+      - date: "2015 – 2016"
+        title: "Department of Microbiology & Molecular Genetics Faculty Meeting Representative"
+        org: "Michigan State University"
+      - date: "2015"
+        title: "Microbiology Day Volunteer"
+        org: "Impression 5 Science Museum"
+        body: "I taught the public about bacterial chemotaxis and motility."
+
+  - id: "media"
+    title: "Media Coverage"
+    kind: "media"
+    items:
+      - title: "“Cleveland Clinic researchers develop scoring system to anticipate antibiotic resistance.”"
+        outlet: "Cleveland Clinic Lerner Research Institute News"
+        date: "October 3, 2025"
+        descriptor: "Feature article describing our PNAS study, including a new metric to predict antibiotic resistance."
+      - title: "“Traversing STEM with Disabilities: Spotlight on Kyle Card.”"
+        outlet: "ASM Spotlight"
+        date: "December 2, 2021"
+        descriptor: "Profile article highlighting my research and experiences."
+      - title: "“Overcoming Obstacles: Scientist Excels while Dealing with Syndromes.”"
+        outlet: "MSU Today"
+        date: "December 4, 2019"
+        descriptor: "Profile article highlighting my research and experiences."
+      - title: "The Sci-Files Podcast"
+        outlet: "The Sci-Files Podcast"
+        date: "July 21, 2019"
+        descriptor: "Discussed the evolution of antibiotic resistance and mentoring alongside my mentee, Jasper Gomez."
+      - title: "WKAR Radio Interview"
+        outlet: "WKAR Radio"
+        date: "June 18, 2019"
+        descriptor: "Discussed disability advocacy and shared my story about how I became a research scientist."
+
+  - id: "memberships"
+    title: "Society Memberships"
+    kind: "timeline"
+    items:
+      - { date: "2023 – Present", title: "American Association for Cancer Research (AACR)" }
+      - { date: "2020 – Present", title: "Society for the Study of Evolution (SSE)" }
+      - { date: "2015 – Present", title: "American Society for Microbiology (ASM)" }
+      - { date: "2014 – Present", title: "American Association for the Advancement of Science (AAAS)" }
+
+  - id: "references"
+    title: "References"
+    kind: "references"
+    items:
+      - name: "Dr. Richard E. Lenski"
+        role: "Professor, Michigan State University"
+        dept: "Department of Microbiology, Genetics, and Immunology"
+        lines:
+          - "567 Wilson Rd., Room 6177"
+          - "East Lansing, MI 48824"
+        email: "lenski@msu.edu"
+      - name: "Dr. Jacob G. Scott"
+        role: "Professor, Case Western Reserve University"
+        dept: "Department of Molecular Medicine, School of Medicine"
+        lines:
+          - "2111 E. 96th Street, NE6"
+          - "Cleveland, OH 44106"
+        email: "scottj10@ccf.org"
+      - name: "Dr. Robert A. Bonomo"
+        role: "Professor, Case Western Reserve University"
+        dept: "Department of Medicine, School of Medicine"
+        lines:
+          - "12200 Fairhill Rd."
+          - "Cleveland, OH 44120"
+        email: "robert.bonomo@med.va.gov"

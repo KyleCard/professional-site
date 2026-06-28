@@ -1,0 +1,61 @@
+---
+// Minimal "field-station nameplate" nav. The homepage is one continuous walk,
+// so the nav is utility, not the site's spine.
+import { NAV, SITE } from "../data/site";
+interface Props { variant?: "hero" | "solid"; }
+const { variant = "solid" } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "");
+---
+<header class:list={["nav", variant]}>
+  <a class="brand mono" href="/">{SITE.fullName}</a>
+  <nav class="links mono" aria-label="Primary">
+    {NAV.map((l) => (
+      <a
+        href={l.href}
+        aria-current={!l.external && path === l.href.replace(/\/$/, "") ? "page" : undefined}
+        {...(l.external ? { target: "_blank", rel: "noopener" } : {})}
+      >{l.label}</a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .nav {
+    position: fixed; inset: 0 0 auto 0; z-index: var(--z-nav);
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding: 14px clamp(16px, 4vw, 40px);
+  }
+  .nav.hero { background: transparent; }
+  .nav.hero .brand, .nav.hero .links a { mix-blend-mode: multiply; }
+  /* once scrolled off the hero, the nav gains a legible backdrop */
+  .nav.solid,
+  .nav.hero[data-scrolled] {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.1) blur(8px);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .nav.hero[data-scrolled] .brand, .nav.hero[data-scrolled] .links a { mix-blend-mode: normal; }
+  .brand { color: var(--ink); text-decoration: none; font-weight: 500; }
+  .brand:hover { color: var(--teal); }
+  .links { display: flex; gap: clamp(14px, 2vw, 24px); }
+  .links a { color: var(--ink); text-decoration: none; }
+  .links a:hover { color: var(--teal); }
+  .links a[aria-current="page"] { color: var(--teal); text-decoration: underline; text-underline-offset: 4px; }
+  @media (max-width: 640px) {
+    .nav.hero .links { display: none; }
+    .brand { font-size: 0.66rem; }
+  }
+</style>
+
+<script>
+  // Hero nav gains a backdrop once you scroll off the establishing shot.
+  const nav = document.querySelector(".nav.hero");
+  if (nav) {
+    const onScroll = () => {
+      if (scrollY > window.innerHeight * 0.55) nav.setAttribute("data-scrolled", "");
+      else nav.removeAttribute("data-scrolled");
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+</script>

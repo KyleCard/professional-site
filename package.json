@@ -1,0 +1,24 @@
+{
+  "name": "kylejcard-site",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Kyle J. Card, Ph.D. — research site (Adaptive Walk). Astro static → GitHub Pages.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "video": "node tools/make-video.mjs",
+    "shot": "node tools/shot.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.13.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/fraunces": "^5.2.0",
+    "@fontsource/ibm-plex-mono": "^5.2.0",
+    "@fontsource/ibm-plex-sans": "^5.2.0",
+    "js-yaml": "^4.1.0",
+    "sharp": "^0.34.0"
+  }
+}

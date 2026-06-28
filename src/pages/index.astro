@@ -1,0 +1,290 @@
+---
+import Base from "../layouts/Base.astro";
+import Team from "../components/Team.astro";
+import Chip from "../components/Chip.astro";
+import { Image } from "astro:assets";
+import { SITE, LINKS } from "../data/site";
+import portrait from "../../assets/kyle-card-1-900x900px.png";
+import ls01 from "../../assets/research/landscape-01-day.png";
+import ls02 from "../../assets/research/landscape-02-day.png";
+import ls03 from "../../assets/research/landscape-03-day.png";
+import ls04 from "../../assets/research/landscape-04-day.png";
+---
+<Base navVariant="hero" footer={false}>
+  <!-- ════════════════ TRAILHEAD — video hero ════════════════ -->
+  <section class="hero" aria-labelledby="th-h">
+    <div class="hero-bg" aria-hidden="true">
+      <video id="hero-video" class="hero-video" muted loop playsinline preload="auto" poster="/media/colony-poster.jpg">
+        <source src="/media/bacterial_growth.webm" type="video/webm" />
+        <source src="/media/bacterial_growth-web.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-scrim"></div>
+    </div>
+    <div class="hero-copy wrap">
+      <h1 class="lede reveal" id="th-h">Predict. Control. <span class="cure">Cure.</span></h1>
+      <p class="thesis reveal">{SITE.thesis}</p>
+      <p class="who mono reveal"><span class="nm">{SITE.fullName}</span> · {SITE.title}</p>
+    </div>
+    <a class="scrollcue mono" href="#climb" aria-label="Begin the climb"><span>begin the climb</span><span class="ar" aria-hidden="true">↓</span></a>
+  </section>
+
+  <!-- ════════════════ THE CLIMB — scrollytelling ════════════════ -->
+  <section class="climb" id="climb" aria-label="The adaptive walk">
+    <div class="climb-graphic" aria-hidden="true">
+      <div class="sticky">
+        <canvas id="climb-canvas"></canvas>
+        <div class="nodes" id="climb-labels"></div>
+      </div>
+    </div>
+
+    <div class="climb-steps">
+      <!-- the central question -->
+      <article class="step" data-stop="0" aria-labelledby="q-h">
+        <div class="step-card reveal">
+          <h2 class="title" id="q-h">Can we <span class="em">predict</span> evolution before it happens?</h2>
+          <p>I am dedicated to understanding and combating antibiotic resistance. My research combines experimental
+            evolution, functional genomics, and computational modeling to identify the genetic and environmental
+            factors that drive resistance. By integrating these approaches, I aim to develop innovative strategies to
+            predict and guide the evolutionary trajectories of pathogens, ultimately improving treatment outcomes.</p>
+          <figure class="portrait">
+            <Image src={portrait} alt="Portrait of Kyle J. Card" width={460} class="ph" />
+          </figure>
+          <blockquote class="values">
+            <p>I am a disabled scientist born with a rare neurological condition called Moebius syndrome, which affects
+              the muscles controlling facial expressions and eye movement. I also have several limb differences.
+              Although my disabilities pose challenges, my identity as a disabled person has enriched my academic life
+              in many ways. Through my lived experiences, I appreciate that, despite our differences, our curiosity
+              about the natural world binds us together, each of us has a unique story that should be respected, and we
+              all deserve a voice in science.</p>
+            <p>I am committed to creating and maintaining an environment in which all are welcome and respected — one
+              that is inclusive of race, gender, faith, sexual orientation, ability, and socioeconomic status.</p>
+          </blockquote>
+        </div>
+      </article>
+
+      <!-- limiting resistance in the clinic -->
+      <article class="step" data-stop="1" aria-labelledby="lr-h">
+        <div class="step-card reveal">
+          <h2 class="title" id="lr-h"><span class="em">Limiting</span> resistance in the clinic.</h2>
+          <p>Imagine a scenario where a clinician strategically uses existing antibiotics to prevent or reverse drug
+            resistance in an infection. This approach should be possible by exploiting drug tradeoffs in which the
+            evolution of resistance to one therapy increases susceptibility to others. They would only need to alternate
+            to one of these other drugs at the appropriate time.</p>
+          <figure class="fig">
+            <Image src={ls01} alt="Isometric genotype space: adaptive walks climb to the resistant AB peak under Drug 1." class="plate-day" />
+            <Image src={ls02} alt="The same AB genotype sits in a valley under Drug 2 — increased susceptibility, i.e. collateral sensitivity." class="plate-day" />
+          </figure>
+          <p>However, interactions between mutations and their genetic backgrounds can open new adaptive routes or
+            restrict others, challenging our ability to predict in which direction a population will evolve. We must,
+            therefore, comprehensively understand how these interactions shape resistance evolution to design effective
+            treatment strategies.</p>
+          <figure class="fig">
+            <Image src={ls03} alt="Both single mutations increase resistance under Drug 1." class="plate-day" />
+            <Image src={ls04} alt="Under Drug 2, only one path stays resistant — chance in the first drug decides the collateral outcome." class="plate-day" />
+          </figure>
+        </div>
+      </article>
+
+      <!-- history & contingency -->
+      <article class="step" data-stop="2" aria-labelledby="h-h">
+        <div class="step-card reveal">
+          <h2 class="title" id="h-h">History <span class="em">matters.</span></h2>
+          <p>As an HHMI Gilliam Fellow, I investigated how a bacterium's prior history influences its ability to evolve
+            antibiotic resistance. Using <span class="sp">E. coli</span> strains from the Long-Term Evolution
+            Experiment, we found that genomic differences between lines can unpredictably alter resistance and channel
+            evolution down particular mutational pathways.</p>
+          <p>Although this work implicates genetic interactions in our ability to forecast resistance evolution, it is
+            insufficient to focus solely on model organisms. We must systematically investigate these relationships in
+            pathogens — bridging the divide between bench and bedside.</p>
+          <div class="papers">
+            <a class="paper" href={LINKS.scholar} target="_blank" rel="noopener">
+              <span class="jr-line">Evolutionary divergence channels resistance · <span class="jr">PLoS Biology</span></span>
+              <span class="go mono">read →</span>
+            </a>
+            <a class="paper" href="https://doi.org/10.1073/pnas.2016886118" target="_blank" rel="noopener">
+              <span class="jr-line">History constrains adaptation · <span class="jr">PNAS</span></span>
+              <span class="go mono">read →</span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- from model systems to pathogens -->
+      <article class="step" data-stop="3" aria-labelledby="s-h">
+        <div class="step-card reveal">
+          <h2 class="title" id="s-h">From model systems to <span class="em">pathogens.</span></h2>
+          <p>As an HHMI Hanna H. Gray Fellow, I explored drug tradeoffs in <span class="sp">S. aureus</span>. We
+            discovered that this opportunistic pathogen followed at least two distinct adaptive pathways as it evolved
+            vancomycin resistance. These separate paths led to contrasting, yet predictable sensitivities to
+            second-line antibiotics. To account for this uncertainty, we developed a framework called the
+            <strong>Collateral Response Score (CRS)</strong> to provide a probabilistic forecast of how past antibiotic
+            exposure might affect future treatment outcomes.</p>
+          <div class="papers">
+            <a class="paper" href="https://doi.org/10.1073/pnas.2507962122" target="_blank" rel="noopener">
+              <span class="jr-line">Collateral sensitivity in <span class="sp">S. aureus</span> · <span class="jr">PNAS</span></span>
+              <span class="go mono">read →</span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- the summit / the Card Lab -->
+      <article class="step summit-step" data-stop="4" aria-labelledby="c-h">
+        <div class="step-card reveal">
+          <p class="card-lab mono">The Card Lab</p>
+          <h2 class="title" id="c-h">Where <span class="peak">persistence</span> meets resistance.</h2>
+          <p>We established that a pathogen's evolutionary history is key to forecasting its adaptability and therapeutic
+            responses. However, evolution is context-dependent. The selective pressures inside a flask are vastly
+            different from those inside the complex, dynamic environment of the human body, where evolution occurs. To
+            develop effective, evolution-informed therapies, we must bridge the gap between reductionist lab experiments
+            and the clinical reality of infections.</p>
+          <p>My laboratory will pioneer the use of organ-chip technology to overcome this challenge. By integrating
+            experimental evolution in these high-fidelity systems with functional genomics and phenotypic screens, we
+            will dissect the molecular and evolutionary mechanisms of pathogen adaptation in real-time — creating a
+            framework to predict and ultimately steer the evolution of antimicrobial resistance. We will focus on
+            chronic <span class="sp">P. aeruginosa</span> infections in cystic fibrosis, an area with an unmet clinical
+            need and an ideal model system for studying within-host evolution.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ════════════════ EVOLUTION-ON-A-CHIP — summit feature ════════════════ -->
+  <section class="chip-feature" aria-labelledby="chip-h">
+    <div class="wrap">
+      <p class="card-lab mono reveal">The Card Lab</p>
+      <h2 class="title chip-title reveal" id="chip-h">Evolution-on-a-<span class="peak">Chip.</span></h2>
+      <div class="reveal"><Chip /></div>
+    </div>
+  </section>
+
+  <!-- ════════════════ THE TEAM ════════════════ -->
+  <section class="team-sec wrap" aria-labelledby="team-h">
+    <h2 class="title big reveal" id="team-h">The climbers.</h2>
+    <p class="measure lead reveal">The people doing the work — across <span class="sp">P. aeruginosa</span> evolution,
+      biofilms, mutation supply, and collateral tradeoffs.</p>
+    <div class="reveal"><Team /></div>
+  </section>
+
+  <!-- ════════════════ CONTACT — basecamp ════════════════ -->
+  <section class="contact wrap" aria-labelledby="contact-h">
+    <h2 class="title reveal" id="contact-h">Get in touch.</h2>
+    <a class="bigmail reveal" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+    <p class="addr mono reveal">{SITE.org} · {SITE.dept}<br />{SITE.address}</p>
+    <p class="reveal"><a href="/contact">Full contact &amp; affiliations →</a></p>
+  </section>
+</Base>
+
+<style>
+  /* ---- video hero ---- */
+  .hero { position: relative; min-height: 100svh; display: flex; align-items: center; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; z-index: 0; background: var(--paper); }
+  .hero-video { width: 100%; height: 100%; object-fit: cover; filter: saturate(.7) contrast(1.04) brightness(1.03); }
+  .hero-scrim { position: absolute; inset: 0;
+    background:
+      linear-gradient(102deg,
+        color-mix(in srgb, var(--paper) 93%, transparent) 0%,
+        color-mix(in srgb, var(--paper) 80%, transparent) 40%,
+        color-mix(in srgb, var(--paper) 46%, transparent) 72%,
+        color-mix(in srgb, var(--paper) 26%, transparent) 100%),
+      linear-gradient(180deg, color-mix(in srgb, var(--paper) 72%, transparent) 0%, transparent 16%),
+      linear-gradient(0deg, color-mix(in srgb, var(--paper) 60%, transparent) 0%, transparent 26%);
+  }
+  .hero-copy { position: relative; z-index: 2; padding-block: 14vh; }
+  .lede { font-family: var(--font-display); font-weight: 300; font-size: var(--t-h1); line-height: .96;
+    letter-spacing: -.02em; max-width: 16ch; }
+  .lede .cure { color: var(--amber); font-weight: 600; }
+  .thesis { font-size: var(--t-lede); max-width: 33rem; margin-top: 26px; color: var(--ink-soft); }
+  .who { margin-top: 28px; color: var(--slate); }
+  .who .nm { color: var(--ink); font-weight: 500; }
+  .scrollcue { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); color: var(--slate);
+    display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; z-index: 2; }
+  .scrollcue:hover { color: var(--teal); }
+  .scrollcue .ar { color: var(--teal); }
+
+  /* ---- the climb (scrollytelling) ---- */
+  .climb { position: relative; display: grid; grid-template-columns: 1.04fr 0.96fr; align-items: start; }
+  .climb-graphic { position: relative; height: 100%; }
+  .climb-graphic .sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; border-right: 1px solid var(--rule-soft); }
+  #climb-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .nodes { position: absolute; inset: 0; pointer-events: none; }
+
+  .climb-steps { position: relative; z-index: var(--z-content); }
+  .step { min-height: 96svh; display: flex; align-items: center; padding: 9vh clamp(20px, 4vw, 64px); }
+  .step-card { background: color-mix(in srgb, var(--paper-panel) 92%, transparent); backdrop-filter: blur(2px);
+    border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: clamp(22px, 3vw, 40px);
+    box-shadow: 0 24px 60px -40px rgba(34,45,42,.5); max-width: 40rem; }
+  .title { font-size: var(--t-h2); margin-bottom: 18px; }
+  .title .em { color: var(--teal); }
+  .title .peak { color: var(--amber); }
+  .step-card p { margin-bottom: 16px; }
+  .card-lab { color: var(--teal); margin-bottom: 14px; }
+  .portrait { margin: 24px 0; max-width: 340px; }
+  .portrait .ph { width: 100%; border-radius: var(--radius); }
+  .values { margin: 22px 0 0; padding-left: 18px; border-left: 2px solid var(--teal); color: var(--ink-soft); font-size: .96rem; }
+  .values p { margin-bottom: 12px; }
+  /* daylight figures, stacked */
+  .fig { margin: 26px 0; display: flex; flex-direction: column; gap: 6px; }
+  .plate-day { width: 100%; height: auto; border-radius: var(--radius); }
+  .papers { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .paper { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: baseline;
+    padding: 13px 15px; border: 1px solid var(--rule); border-radius: var(--radius);
+    background: color-mix(in srgb, var(--paper-panel) 60%, transparent); text-decoration: none; color: var(--ink);
+    transition: border-color .2s, background .2s; }
+  .paper:hover { border-color: var(--teal); background: var(--paper-panel); }
+  .paper .jr-line { color: var(--ink); }
+  .paper .go { color: var(--teal); white-space: nowrap; }
+  .chip-placeholder { margin-top: 26px; padding: 40px 20px; text-align: center; color: var(--slate);
+    border: 1px dashed var(--rule); border-radius: var(--radius); background: var(--paper-warm); }
+  .summit-step .step-card { background: color-mix(in srgb, var(--paper-warm) 92%, transparent); }
+
+  /* ---- evolution-on-a-chip feature ---- */
+  .chip-feature { position: relative; z-index: var(--z-content);
+    background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+    border-top: 1px solid var(--rule-soft); padding: var(--s-7) 0 var(--s-8); }
+  .chip-title { font-size: var(--t-h1); margin-bottom: var(--s-4); }
+  .chip-title .peak { color: var(--amber); }
+
+  /* ---- team + contact ---- */
+  .team-sec { padding: var(--s-8) 0 var(--s-7); }
+  .title.big { font-size: var(--t-h1); margin-bottom: 16px; }
+  .lead { color: var(--ink-soft); font-size: var(--t-lede); margin-bottom: var(--s-6); }
+  .contact { padding: var(--s-6) 0 var(--s-8); }
+  .bigmail { display: inline-block; font-family: var(--font-display); font-size: var(--t-h2); color: var(--ink);
+    text-decoration: none; margin: 8px 0 18px; }
+  .bigmail:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 6px; }
+  .addr { color: var(--ink-faint); line-height: 1.7; margin-bottom: 20px; letter-spacing: .12em; }
+
+  @media (max-width: 900px) {
+    .climb { grid-template-columns: 1fr; }
+    .climb-graphic { display: none; }
+    .step { min-height: auto; padding: 7vh clamp(18px, 5vw, 32px); }
+    .step-card { max-width: 100%; backdrop-filter: none; }
+  }
+</style>
+
+<script>
+  import { Climb } from "../scripts/landscape";
+
+  // Hero video: play only when motion is allowed (reduced-motion shows the poster).
+  const video = document.getElementById("hero-video") as HTMLVideoElement | null;
+  if (video) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) video.pause();
+    else video.play?.().catch(() => {});
+  }
+
+  // Scrollytelling: the camera focuses each peak as its step scrolls in (desktop only).
+  const climbCanvas = document.getElementById("climb-canvas") as HTMLCanvasElement | null;
+  const climbLabels = document.getElementById("climb-labels") as HTMLElement | null;
+  if (climbCanvas && climbLabels && matchMedia("(min-width: 901px)").matches) {
+    const climb = new Climb(climbCanvas, climbLabels);
+    const steps = [...document.querySelectorAll<HTMLElement>(".step")];
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) climb.focusStop(Number((e.target as HTMLElement).dataset.stop || 0));
+      }),
+      { threshold: 0.35, rootMargin: "-12% 0px -22% 0px" },
+    );
+    steps.forEach((s) => io.observe(s));
+  }
+</script>

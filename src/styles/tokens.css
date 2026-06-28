@@ -1,0 +1,61 @@
+/* ============================================================================
+   Design tokens — "Adaptive Walk"
+   Every colour is traced to Kyle's own research imagery (see DESIGN_PLAN.md §2):
+   fitness-landscape figures, contingency plots, the colony video, topographic
+   terrain. The palette reads as daylight topography — sand lowlands, sage/teal
+   mid-slopes, ochre upper slopes, a sunlit amber summit — NOT the stock
+   cream + terracotta + serif default.
+   ============================================================================ */
+:root {
+  /* ---- ground (warm sand "contour paper"), tinted by elevation ---- */
+  --paper:        #ECE3D0;   /* base lowland ground */
+  --paper-cool:   #E7E4D9;   /* faint cool wash — the lowest, foundational stops */
+  --paper-warm:   #F3E7CC;   /* warmer ground approaching the summit */
+  --paper-panel:  #F6F0E1;   /* slightly lifted surface for cards/figures */
+
+  /* ---- ink ---- */
+  --ink:          #222D2A;   /* dark slate-teal (colony shadow / terrain ink) ~13:1 on paper */
+  --ink-soft:     #4F5E59;   /* secondary text (≥4.5:1 on paper) */
+  --ink-faint:    #6B776F;   /* tertiary / captions */
+
+  /* ---- accents (all cool/earthy — never terracotta, never neon) ---- */
+  --slate:        #3C5A6A;   /* cool valley + the fitness-axis blue */
+  --teal:         #1C6B57;   /* PRIMARY accent + links — contingency-plot data teal, AA on paper (~5:1) */
+  --teal-deep:    #124A3D;   /* hover / pressed */
+  --teal-soft:    #5E8F7E;   /* vegetated mid-slope (decorative, large only) */
+
+  /* ---- elevation amber (gated to high ground) ---- */
+  --amber:        #B4790F;   /* large display peak text — ≥3:1 on paper */
+  --amber-deep:   #875A10;   /* amber at body size — ≥4.5:1 on paper */
+  --amber-bright: #DE9F2A;   /* non-text marks only (node fills, climber) — fails text contrast by design */
+
+  /* ---- lines / surfaces ---- */
+  --rule:         #CBBFA6;   /* hairline on paper */
+  --rule-soft:    #DBD2BD;
+  --focus:        #1C6B57;
+  --plate:        #14181E;   /* dark "journal plate" background for original figures */
+
+  /* ---- type ---- */
+  --font-display: "Fraunces Variable", "Fraunces", Georgia, serif;
+  --font-body:    "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* fluid type scale */
+  --t-mono:   .72rem;
+  --t-body:   clamp(1rem, .96rem + .25vw, 1.125rem);
+  --t-lede:   clamp(1.08rem, 1rem + .5vw, 1.3rem);
+  --t-h3:     clamp(1.3rem, 1.1rem + .8vw, 1.7rem);
+  --t-h2:     clamp(2rem, 1.5rem + 2.2vw, 3.4rem);
+  --t-h1:     clamp(2.6rem, 1.6rem + 4.6vw, 6.6rem);
+
+  /* spacing rhythm (8px base) */
+  --s-1: .5rem;  --s-2: 1rem;  --s-3: 1.5rem;  --s-4: 2rem;
+  --s-5: 3rem;   --s-6: 4rem;  --s-7: 6rem;    --s-8: 9rem;
+
+  --maxw: 1200px;
+  --measure: 38rem;     /* readable line length */
+  --radius: 3px;
+
+  /* z-scale */
+  --z-terrain: 0; --z-content: 5; --z-nav: 40; --z-skip: 100;
+}

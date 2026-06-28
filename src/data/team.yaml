@@ -1,0 +1,39 @@
+# The Card Lab — climbers on the expedition.
+# To add a member: append an entry below (keep `order` ascending), drop a square
+# photo in assets/team/ (or leave `photo` blank for a contour-marker placeholder),
+# and write a bio. `*text*` renders italic (species names). Roles group the ridge.
+members:
+  - order: 1
+    name: "Justin Creary"
+    role: "Graduate Student"
+    org: "CWRU"
+    photo: "justin_creary.jpeg"
+    bio: "Justin is investigating how prior evolutionary history under varying concentrations of tobramycin affects the ability of *P. aeruginosa* to evolve resistance to clinically relevant second-line drugs."
+
+  - order: 2
+    name: "Amira Stocks"
+    role: "Undergraduate Student"
+    org: "CWRU"
+    photo: "amira_stocks.jpeg"
+    bio: "Amira is investigating the impact of biofilm formation and population bottleneck size on the evolutionary trajectories of antibiotic resistance in *P. aeruginosa* and how these pathways differ from planktonic populations."
+
+  - order: 3
+    name: "Shiva Ayyar"
+    role: "Undergraduate Student"
+    org: "CWRU"
+    photo: "shiva_ayyar.jpeg"
+    bio: "Shiva is examining the combined impact of genetic background and mutation supply on the potential of *P. aeruginosa* to evolve resistance to several first-line antibiotics."
+
+  - order: 4
+    name: "Rohan Desai"
+    role: "Undergraduate Student"
+    org: "Vanderbilt"
+    photo: "rohan_desai.jpeg"
+    bio: "Rohan joined our lab this summer and is working with Justin and Shiva to knock out the methyl-directed mismatch repair gene *mutS* in *P. aeruginosa*, thereby increasing its point-mutation rate. They will use these mutants in their study of mutation supply."
+
+  - order: 5
+    name: "Aryan Agarwal"
+    role: "High School Student"
+    org: ""
+    photo: "aryan_agarwal.jpeg"
+    bio: "Aryan is a high school student with us this summer. He is working with Shiva, using previous whole-genome sequence data from experimentally evolved *S. aureus* lines to derive a 'heterogeneity score,' and assessing whether this metric correlates with particular drug trade-offs."

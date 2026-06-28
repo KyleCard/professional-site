@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kyle J. Card — Adaptive Walk (isometric preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#ECE3D0; --paper-cool:#E7E4D9; --paper-warm:#F3E7CC;
+  --ink:#222D2A; --ink-soft:#51605B; --slate:#3C5A6A;
+  --teal:#1C6B57; --teal-deep:#124A3D; --amber:#B97E14; --amber-bright:#DE9F2A;
+  --rule:#CBBFA6; --focus:#1C6B57; --maxw:1200px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:18px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;font-weight:500}
+a{color:var(--teal);text-underline-offset:3px}
+a:hover{color:var(--teal-deep)}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:3px;border-radius:2px}
+.skip{position:absolute;left:-999px;top:0;background:var(--ink);color:var(--paper);padding:.6rem 1rem;z-index:100}
+.skip:focus{left:12px;top:12px}
+
+.bar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;
+  padding:14px clamp(16px,4vw,40px);mix-blend-mode:multiply}
+.bar .name{color:var(--ink);font-weight:500}
+.bar nav{display:flex;gap:22px}
+.bar nav a{color:var(--ink);text-decoration:none}
+.bar nav a:hover{color:var(--teal)}
+
+/* ---- hero: text zone over an isometric-landscape panorama ---- */
+.hero{position:relative;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;
+  background:radial-gradient(120% 80% at 82% 92%, var(--paper-warm) 0%, var(--paper) 50%, var(--paper-cool) 100%)}
+.stage{position:relative;z-index:1;flex:1 1 auto;min-height:44svh;width:100%}
+#land{position:absolute;inset:0;width:100%;height:100%;display:block}
+.nodes{position:absolute;inset:0;z-index:2;pointer-events:none}
+.node-tag{position:absolute;transform:translate(-50%,-150%);white-space:nowrap;text-align:center;
+  color:var(--slate);font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.14em;font-size:.62rem}
+.node-tag b{display:block;color:var(--ink);font-weight:500;letter-spacing:.02em;font-size:.74rem;margin-top:2px}
+.node-tag .el{color:var(--teal)}
+.node-tag.summit .el{color:var(--amber)}
+
+.hero-copy{position:relative;z-index:3;width:100%;max-width:var(--maxw);margin:0 auto;flex:0 0 auto;
+  padding:clamp(88px,13vh,140px) clamp(20px,5vw,56px) 3vh}
+.eyebrow{display:flex;align-items:center;gap:12px;color:var(--slate);margin-bottom:22px}
+.eyebrow .dots{letter-spacing:.1em;color:var(--teal)}
+.lede{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:300;
+  font-size:clamp(2.6rem,7.6vw,6.8rem);line-height:.96;letter-spacing:-.02em;margin:0;color:var(--ink);max-width:14ch}
+.lede .verb{font-weight:500;font-style:italic}
+.lede .cure{color:var(--amber);font-weight:600}
+.thesis{font-size:clamp(1.05rem,1.7vw,1.3rem);max-width:32rem;margin:28px 0 0;color:var(--ink-soft)}
+.who{margin-top:30px;color:var(--slate)}
+.who .nm{color:var(--ink);font-weight:500;letter-spacing:.02em}
+.scrollcue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;color:var(--slate);
+  display:flex;flex-direction:column;align-items:center;gap:6px}
+.scrollcue .ar{font-size:1rem;color:var(--teal)}
+
+/* ---- a content stop on paper ---- */
+.stop{position:relative;z-index:5;max-width:var(--maxw);margin:0 auto;padding:12vh clamp(20px,5vw,56px)}
+.split{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(28px,5vw,64px);align-items:center}
+.eyebrow2{color:var(--slate);margin-bottom:20px;display:flex;gap:12px;align-items:center}
+.eyebrow2 .dots{color:var(--teal)}
+.title{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:400;
+  font-size:clamp(2rem,4.6vw,3.6rem);line-height:1.02;letter-spacing:-.015em;margin:0 0 22px;color:var(--ink)}
+.title .em{font-style:italic;color:var(--teal)}
+.stop p{margin:0 0 18px}
+.values{margin-top:22px;padding-left:18px;border-left:2px solid var(--teal);color:var(--ink-soft);font-size:.98rem}
+.portrait{position:relative}
+.portrait img{width:100%;height:auto;display:block;border-radius:2px;filter:saturate(.94) contrast(1.02)}
+.portrait .ring{position:absolute;inset:-10px;border:1px solid var(--rule);border-radius:3px}
+.portrait figcaption{margin-top:10px;color:var(--slate)}
+.contour-note{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px) 16vh;color:var(--ink-soft)}
+.contour-note .mono{color:var(--slate)}
+
+footer{position:relative;z-index:5;padding:56px 0;color:var(--slate);text-align:center}
+
+@media (max-width:820px){
+  body{font-size:16px}
+  .split{grid-template-columns:1fr;gap:26px}
+  .bar nav{display:none}
+  .node-tag{font-size:.55rem}
+}
+/* progressive enhancement: only fade when JS is active */
+.js .fade{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.js .fade.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .fade{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="bar">
+  <span class="name mono">Kyle&nbsp;J.&nbsp;Card · field&nbsp;notes</span>
+  <nav class="mono" aria-label="Sections"><a href="#">CV</a><a href="#">Publications</a><a href="#">Blog</a><a href="#">Contact</a></nav>
+</div>
+
+<main id="main">
+  <!-- TRAILHEAD over the isometric landscape -->
+  <section class="hero" aria-labelledby="th-h">
+    <div class="hero-copy">
+      <p class="eyebrow mono fade"><span class="dots">▽</span> Trailhead · elev. 60 m · an adaptive walk</p>
+      <h1 class="lede fade" id="th-h"><span class="verb">Predict.</span> <span class="verb">Control.</span> <span class="cure">Cure.</span></h1>
+      <p class="thesis fade">Exploring the genetic and ecological factors driving antibiotic resistance — and pioneering new
+        technologies to design effective, evolution-inspired therapeutic strategies.</p>
+      <p class="who mono fade"><span class="nm">Kyle&nbsp;Card,&nbsp;Ph.D.</span> · HHMI Hanna H. Gray Postdoctoral Fellow</p>
+    </div>
+    <div class="stage">
+      <canvas id="land" role="img" aria-label="An isometric fitness landscape: an adaptive walk climbs from a low valley up to a sunlit summit peak, marked with the stops of the journey."></canvas>
+      <div class="nodes" id="nodelabels" aria-hidden="true"></div>
+    </div>
+    <div class="scrollcue mono" aria-hidden="true"><span>begin the climb</span><span class="ar">↓</span></div>
+  </section>
+
+  <!-- STOP 01 -->
+  <section class="stop" aria-labelledby="q-h">
+    <div class="split">
+      <div class="fade">
+        <p class="eyebrow2 mono"><span class="dots">△▽</span> Stop 01 · the central question · elev. 340 m</p>
+        <h2 class="title" id="q-h">Can we read evolution <span class="em">before</span> it happens?</h2>
+        <p>I am dedicated to understanding and combating antibiotic resistance. My research combines experimental
+          evolution, functional genomics, and computational modeling to identify the genetic and environmental
+          factors that drive resistance — to predict and guide the evolutionary trajectories of pathogens, and
+          ultimately improve treatment outcomes.</p>
+        <div class="values">I am a disabled scientist born with Moebius syndrome, a rare neurological condition, along
+          with several limb differences. My identity as a disabled person has enriched my academic life: our curiosity
+          about the natural world binds us together, each of us has a story that should be respected, and we all deserve
+          a voice in science.</div>
+      </div>
+      <figure class="portrait fade">
+        <div class="ring"></div>
+        <img src="assets/card-portrait.jpg" alt="Portrait of Kyle J. Card" />
+        <figcaption class="mono">Cleveland, OH · 41.50°N 81.62°W</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <p class="contour-note fade"><span class="mono">↑ next stops</span> — the climb continues through the discoveries
+    (history &amp; contingency · <i>S. aureus</i> collateral sensitivity) toward the summit: the future lab and
+    Evolution-on-a-Chip. Each discovery is its own peak on this same landscape.</p>
+
+  <footer class="mono">isometric preview · the walk ascends the z-axis (fitness → translational impact)</footer>
+</main>
+
+<script>
+(function(){
+  document.documentElement.classList.add("js");
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const cv = document.getElementById("land"), ctx = cv.getContext("2d");
+
+  // ---- heightfield: fbm value-noise + gaussian peaks at each stop ----
+  function mulberry32(a){return function(){a|=0;a=(a+0x6d2b79f5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+  const rnd=mulberry32(73), G=256, grid=new Float32Array(G*G);
+  for(let i=0;i<grid.length;i++)grid[i]=rnd();
+  const sm=t=>t*t*(3-2*t), at=(x,y)=>grid[((y&(G-1))*G+(x&(G-1)))];
+  function vn(x,y){const x0=Math.floor(x),y0=Math.floor(y),fx=sm(x-x0),fy=sm(y-y0);
+    const a=at(x0,y0),b=at(x0+1,y0),c=at(x0,y0+1),d=at(x0+1,y0+1);
+    return (a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy}
+  function fbm(x,y){let a=.5,f=1,s=0,n=0;for(let o=0;o<4;o++){s+=a*vn(x*f,y*f);n+=a;a*=.5;f*=2}return s/n}
+
+  // stops as ascending peaks in genotype×pressure space (x,y in 0..1), climbing to the summit
+  const stops=[
+    {id:"start",  x:0.12,y:0.88, amp:0.10, sig:0.13, label:"Trailhead", el:"60 m"},
+    {id:"q",      x:0.33,y:0.67, amp:0.34, sig:0.115,label:"The question", el:"340 m"},
+    {id:"history",x:0.52,y:0.50, amp:0.58, sig:0.105,label:"History & contingency", el:"980 m"},
+    {id:"staph",  x:0.67,y:0.35, amp:0.82, sig:0.10, label:"Collateral sensitivity", el:"1240 m"},
+    {id:"summit", x:0.86,y:0.17, amp:1.35, sig:0.125,label:"Evolution-on-a-Chip", el:"1850 m", summit:true},
+  ];
+  // a couple of subordinate ridges so the massif reads rugged, not like a single ramp
+  const ridges=[{x:0.62,y:0.62,amp:0.26,sig:0.07},{x:0.40,y:0.34,amp:0.30,sig:0.08},{x:0.78,y:0.52,amp:0.22,sig:0.06}];
+  function H(x,y){
+    let h=0.12*fbm(x*5.0+11,y*5.0+7)+0.05*fbm(x*11+3,y*11+19);
+    for(const s of stops){const dx=x-s.x,dy=y-s.y;h+=s.amp*Math.exp(-(dx*dx+dy*dy)/(2*s.sig*s.sig))}
+    for(const s of ridges){const dx=x-s.x,dy=y-s.y;h+=s.amp*Math.exp(-(dx*dx+dy*dy)/(2*s.sig*s.sig))}
+    return h;
+  }
+  let zmin=9,zmax=-9;
+  for(let i=0;i<=80;i++)for(let j=0;j<=80;j++){const v=H(i/80,j/80);if(v<zmin)zmin=v;if(v>zmax)zmax=v}
+
+  // ---- hypsometric ramp (sand valley → sage slope → ochre → amber peak) ----
+  const RAMP=[[0,[231,222,200]],[.30,[206,188,142]],[.55,[129,146,120]],[.78,[192,131,52]],[1,[230,168,52]]];
+  function ramp(t){t=Math.max(0,Math.min(1,t));let a=RAMP[0],b=RAMP[RAMP.length-1];
+    for(let i=0;i<RAMP.length-1;i++){if(t>=RAMP[i][0]&&t<=RAMP[i+1][0]){a=RAMP[i];b=RAMP[i+1];break}}
+    const u=(t-a[0])/((b[0]-a[0])||1);return [0,1,2].map(k=>a[1][k]+(b[1][k]-a[1][k])*u)}
+  const PAPER=[236,227,208];
+
+  // ---- view / projection ----
+  let W,Hh,DPR,V;
+  function layout(){
+    DPR=Math.min(2,devicePixelRatio||1);
+    W=cv.clientWidth; Hh=cv.clientHeight;
+    cv.width=W*DPR; cv.height=Hh*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    const span=Math.min(W*1.02, Hh*2.5);
+    V={ ox: W*0.5, oy: Hh*0.96, sx: span*(W<820?0.52:0.60), sy: span*0.285, sz: span*0.205 };
+  }
+  function project(x,y,z){
+    const u=x-0.5, v=y-0.5;
+    return [ V.ox + (u-v)*V.sx, V.oy + (u+v)*V.sy - z*V.sz ];
+  }
+  const L=(()=>{const v=[-0.55,-0.5,0.92],m=Math.hypot(...v);return v.map(c=>c/m)})();
+
+  function drawSurface(){
+    const N=64;
+    const cells=[];
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++)cells.push([i,j]);
+    cells.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));        // painter: back → front
+    for(const [i,j] of cells){
+      const x0=i/N,x1=(i+1)/N,y0=j/N,y1=(j+1)/N;
+      const z00=H(x0,y0),z10=H(x1,y0),z11=H(x1,y1),z01=H(x0,y1);
+      const p00=project(x0,y0,z00),p10=project(x1,y0,z10),p11=project(x1,y1,z11),p01=project(x0,y1,z01);
+      const az=(z00+z10+z11+z01)/4, t=(az-zmin)/(zmax-zmin);
+      // normal from world coords
+      const ax=[x1-x0,0,z10-z00], ay=[0,y1-y0,z01-z00];
+      let nx=ax[1]*ay[2]-ax[2]*ay[1], ny=ax[2]*ay[0]-ax[0]*ay[2], nz=ax[0]*ay[1]-ax[1]*ay[0];
+      const nm=Math.hypot(nx,ny,nz)||1; nx/=nm;ny/=nm;nz/=nm;
+      const diff=Math.max(0,nx*L[0]+ny*L[1]+nz*L[2]);
+      const sh=0.52+0.72*diff;                          // stronger directional contrast
+      let c=ramp(t).map(v=>Math.min(255,v*sh));
+      const depth=(x0+y0)/2;                            // back = hazier (aerial perspective)
+      const haze=(1-depth)*0.16; c=c.map((v,k)=>v*(1-haze)+PAPER[k]*haze);
+      ctx.beginPath();
+      ctx.moveTo(p00[0],p00[1]);ctx.lineTo(p10[0],p10[1]);ctx.lineTo(p11[0],p11[1]);ctx.lineTo(p01[0],p01[1]);ctx.closePath();
+      ctx.fillStyle=`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`; ctx.fill();
+      const major=(i%8===0||j%8===0);
+      ctx.strokeStyle=major?`rgba(40,52,46,0.16)`:`rgba(40,52,46,0.07)`; ctx.lineWidth=major?0.7:0.5; ctx.stroke();
+    }
+  }
+
+  // adaptive walk across the surface
+  function cr(pts,n){const out=[];for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;
+      out.push([0.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
+                0.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)])}}
+    out.push(pts[pts.length-1]);return out}
+  function drawWalk(progress){
+    const path=cr(stops.map(s=>[s.x,s.y]),28);
+    const lift=p=>project(p[0],p[1],H(p[0],p[1])+0.02);
+    ctx.lineCap="round";ctx.lineJoin="round";
+    const lim=Math.max(1,Math.floor(path.length*progress));
+    // 1) cast shadow on the surface
+    ctx.beginPath();
+    for(let i=0;i<=lim&&i<path.length;i++){const q=project(path[i][0],path[i][1],H(path[i][0],path[i][1])+0.004);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}
+    ctx.strokeStyle="rgba(25,34,30,0.22)";ctx.lineWidth=9;ctx.stroke();
+    // 2) light casing so the trail reads against any terrain colour
+    ctx.beginPath();
+    for(let i=0;i<=lim&&i<path.length;i++){const q=lift(path[i]);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}
+    ctx.strokeStyle="rgba(247,242,228,0.95)";ctx.lineWidth=7;ctx.stroke();
+    // 3) coloured trail (slate → teal → amber) on top
+    for(let i=1;i<=lim&&i<path.length;i++){
+      const t=i/path.length;
+      const col = t<0.5 ? mix([60,90,118],[28,107,87],t/0.5) : mix([28,107,87],[222,159,42],(t-0.5)/0.5);
+      const a=lift(path[i-1]),b=lift(path[i]);
+      ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+      ctx.strokeStyle=`rgb(${col[0]|0},${col[1]|0},${col[2]|0})`;ctx.lineWidth=4.2;ctx.stroke();
+    }
+    // nodes + drop stems
+    stops.forEach((s)=>{
+      const z=H(s.x,s.y);
+      const top=project(s.x,s.y,z+0.02), base=project(s.x,s.y,0);
+      ctx.beginPath();ctx.moveTo(top[0],top[1]);ctx.lineTo(base[0],base[1]);
+      ctx.strokeStyle="rgba(40,70,86,0.30)";ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.stroke();ctx.setLineDash([]);
+      const r=s.summit?11:7.5;
+      // white halo ring for separation
+      ctx.beginPath();ctx.arc(top[0],top[1],r+2.5,0,7);ctx.fillStyle="rgba(247,242,228,0.92)";ctx.fill();
+      const g=ctx.createRadialGradient(top[0]-r*0.4,top[1]-r*0.5,1,top[0],top[1],r);
+      const core=s.summit?["#F4CB66","#C8881E"]:["#EAF3EE","#1C6B57"];
+      g.addColorStop(0,core[0]);g.addColorStop(1,core[1]);
+      ctx.beginPath();ctx.arc(top[0],top[1],r,0,7);ctx.fillStyle=g;ctx.fill();
+      ctx.lineWidth=1.6;ctx.strokeStyle=s.summit?"#9a6a12":"#13483b";ctx.stroke();
+      s._scr=top;
+    });
+    return path;
+  }
+  function mix(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t)}
+
+  // fitness axis (vertical, back-left) + floor edge
+  function drawAxis(){
+    const c0=project(0,1,0),c1=project(0,0,0),c2=project(1,0,0),c3=project(1,1,0);
+    ctx.beginPath();ctx.moveTo(c0[0],c0[1]);ctx.lineTo(c1[0],c1[1]);ctx.lineTo(c2[0],c2[1]);
+    ctx.strokeStyle="rgba(60,90,106,0.22)";ctx.lineWidth=1;ctx.stroke();
+    const base=project(0,0,0), tipZ=zmax*1.04, tip=project(0,0,tipZ);
+    ctx.beginPath();ctx.moveTo(base[0],base[1]);ctx.lineTo(tip[0],tip[1]);
+    ctx.strokeStyle="rgba(60,90,106,0.45)";ctx.lineWidth=1.4;ctx.stroke();
+    // arrow
+    ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(tip[0]-4,tip[1]+8);ctx.moveTo(tip[0],tip[1]);ctx.lineTo(tip[0]+4,tip[1]+8);
+    ctx.strokeStyle="rgba(60,90,106,0.5)";ctx.stroke();
+  }
+
+  // DOM labels for nodes (crisp text)
+  const nl=document.getElementById("nodelabels");
+  function placeLabels(){
+    nl.innerHTML=stops.map(s=>{
+      if(!s._scr)return"";
+      const left=(s._scr[0]/W*100).toFixed(2), top=(s._scr[1]/Hh*100).toFixed(2);
+      return `<div class="node-tag${s.summit?' summit':''}" style="left:${left}%;top:${top}%">`
+        +`<span class="el">▲ ${s.el}</span><b>${s.label}</b></div>`;
+    }).join("");
+  }
+
+  function render(progress){
+    ctx.clearRect(0,0,W,Hh);
+    drawSurface(); drawAxis(); drawWalk(progress); placeLabels();
+  }
+  function frame(){
+    const p = reduce ? 1 : Math.min(1, 0.16 + (1-Math.min(1, scrollY/(innerHeight*0.9)))*0 + drawP);
+    render(reduce?1:drawP);
+  }
+  let drawP = reduce?1:0.001, raf;
+  function animateIn(){
+    const t0=performance.now(), dur=1600;
+    function step(now){const k=Math.min(1,(now-t0)/dur);drawP=0.05+0.95*(k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2);
+      render(drawP); if(k<1)raf=requestAnimationFrame(step)}
+    raf=requestAnimationFrame(step);
+  }
+  function init(){layout(); if(reduce){render(1)} else {render(0.05); animateIn()} }
+  addEventListener("resize",()=>{cancelAnimationFrame(raf);layout();render(reduce?1:drawP)});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(init); else init();
+
+  // reveals
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.16,rootMargin:"0px 0px -8% 0px"});
+  document.querySelectorAll(".fade").forEach(el=>reduce?el.classList.add("in"):io.observe(el));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+// shot.mjs — screenshot the preview with headless Edge over the DevTools Protocol.
+// No Playwright needed; Node has global fetch + WebSocket.
+import { spawn } from "node:child_process";
+import { mkdirSync } from "node:fs";
+import { writeFileSync } from "node:fs";
+
+const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
+const PORT = 9333;
+const URL_FILE = "file:///C:/Users/cardk/Nextcloud/Repos/professional-site/preview/index.html";
+const OUT = "C:/Users/cardk/Nextcloud/Repos/professional-site/preview/shots";
+mkdirSync(OUT, { recursive: true });
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const shots = [
+  { out: "iso-01-trailhead-desktop.png", w: 1440, h: 900, dsf: 1, settle: 2300 },
+  { out: "iso-02-stop-desktop.png", w: 1440, h: 940, dsf: 1, scrollTo: ".stop" },
+  { out: "iso-03-trailhead-mobile.png", w: 390, h: 844, dsf: 2, mobile: true, settle: 2300 },
+  { out: "iso-04-trailhead-reduced.png", w: 1440, h: 900, dsf: 1, reduce: true, settle: 900 },
+];
+
+// minimal CDP client over a single page target
+class CDP {
+  constructor(ws) { this.ws = ws; this.id = 0; this.waiters = new Map(); this.events = []; this.handlers = new Map();
+    ws.addEventListener("message", (e) => {
+      const m = JSON.parse(e.data);
+      if (m.id && this.waiters.has(m.id)) { this.waiters.get(m.id)(m); this.waiters.delete(m.id); }
+      if (m.method && this.handlers.has(m.method)) this.handlers.get(m.method)(m.params);
+    });
+  }
+  send(method, params = {}) { const id = ++this.id; this.ws.send(JSON.stringify({ id, method, params }));
+    return new Promise((res) => this.waiters.set(id, res)); }
+  on(method, fn) { this.handlers.set(method, fn); }
+}
+
+async function main() {
+  const proc = spawn(EDGE, [
+    "--headless=new", `--remote-debugging-port=${PORT}`,
+    `--user-data-dir=C:/Users/cardk/AppData/Local/Temp/edge-shot-profile`,
+    "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
+    "--force-color-profile=srgb", "about:blank",
+  ], { stdio: "ignore" });
+
+  // wait for the debugger endpoint
+  let ver;
+  for (let i = 0; i < 60; i++) {
+    try { ver = await (await fetch(`http://localhost:${PORT}/json/version`)).json(); break; }
+    catch { await sleep(250); }
+  }
+  if (!ver) throw new Error("Edge debugger did not start");
+
+  for (const s of shots) {
+    const tgt = await (await fetch(`http://localhost:${PORT}/json/new?about:blank`, { method: "PUT" }))
+      .json().catch(async () => (await fetch(`http://localhost:${PORT}/json/new?about:blank`)).json());
+    const ws = new WebSocket(tgt.webSocketDebuggerUrl);
+    await new Promise((r) => (ws.onopen = r));
+    const cdp = new CDP(ws);
+    let loaded = false; cdp.on("Page.loadEventFired", () => (loaded = true));
+    await cdp.send("Page.enable");
+    await cdp.send("Emulation.setDeviceMetricsOverride",
+      { width: s.w, height: s.h, deviceScaleFactor: s.dsf || 1, mobile: !!s.mobile });
+    await cdp.send("Emulation.setEmulatedMedia",
+      { features: [{ name: "prefers-reduced-motion", value: s.reduce ? "reduce" : "no-preference" }] });
+    await cdp.send("Page.navigate", { url: URL_FILE });
+    for (let i = 0; i < 80 && !loaded; i++) await sleep(50);
+    await cdp.send("Runtime.evaluate", { expression: "document.fonts.ready.then(()=>true)", awaitPromise: true });
+    await sleep(s.settle || 500);
+    if (s.scrollTo) {
+      await cdp.send("Runtime.evaluate", { expression:
+        `(()=>{const el=document.querySelector(${JSON.stringify(s.scrollTo)});` +
+        `const y=el.getBoundingClientRect().top+scrollY-(innerHeight-el.getBoundingClientRect().height)/2;` +
+        `window.scrollTo(0,Math.max(0,y));return scrollY})()` });
+      await sleep(900); // let draw + reveals settle
+    }
+    const { result } = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    writeFileSync(`${OUT}/${s.out}`, Buffer.from(result.data, "base64"));
+    console.log("shot:", s.out);
+    ws.close();
+  }
+  proc.kill();
+  console.log("done →", OUT);
+  process.exit(0);
+}
+main().catch((e) => { console.error(e); process.exit(1); });

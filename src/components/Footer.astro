@@ -1,0 +1,40 @@
+---
+import { Image } from "astro:assets";
+import { SITE } from "../data/site";
+import ccf from "../../assets/logos/logo-ccf.png";
+import hhmi from "../../assets/logos/hhmi.png";
+import sig from "../../assets/kjc_sig.png";
+const year = new Date().getFullYear();
+---
+<footer class="foot">
+  <div class="wrap inner">
+    <div class="col">
+      <a class="email" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      <p class="addr mono">{SITE.org} · {SITE.dept}<br />{SITE.address}</p>
+    </div>
+    <div class="col affil">
+      <Image src={ccf} alt="Cleveland Clinic" class="logo" densities={[1, 2]} />
+      <Image src={hhmi} alt="Howard Hughes Medical Institute" class="logo" densities={[1, 2]} />
+    </div>
+  </div>
+  <div class="wrap base">
+    <Image src={sig} alt={`${SITE.fullName} signature`} class="sig" densities={[1, 2]} />
+    <p class="mono cr">© {year} {SITE.fullName} · Predict. Control. Cure.</p>
+  </div>
+</footer>
+
+<style>
+  .foot { position: relative; z-index: var(--z-content); margin-top: var(--s-8);
+    padding: var(--s-6) 0 var(--s-5); border-top: 1px solid var(--rule);
+    background: var(--paper-cool); }
+  .inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-5); align-items: start; }
+  .email { font-family: var(--font-display); font-size: var(--t-h3); color: var(--ink); text-decoration: none; }
+  .email:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 5px; }
+  .addr { color: var(--ink-faint); line-height: 1.7; margin-top: var(--s-2); letter-spacing: .12em; }
+  .affil { display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap; }
+  .logo { height: 38px; width: auto; opacity: .82; }
+  .base { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3);
+    margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--rule-soft); flex-wrap: wrap; }
+  .sig { height: 44px; width: auto; opacity: .9; }
+  .cr { color: var(--ink-faint); }
+</style>
