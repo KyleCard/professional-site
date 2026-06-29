@@ -1,0 +1,275 @@
+---
+import Base from "../layouts/Base.astro";
+import yaml from "js-yaml";
+import cvYaml from "../data/cv.yaml?raw";
+import { CV_PDF, LINKS } from "../data/site";
+
+const cv = yaml.load(cvYaml) as any;
+const { header, sections } = cv;
+
+// *text* → italic (species + journal names)
+const it = (s = "") => s.replace(/\*([^*]+)\*/g, "<i>$1</i>");
+
+// author list: highlight Kyle (role first/senior), underline direct mentees, append * for equal contribution
+type Author = string | { name: string; role?: string; mentee?: boolean; equal?: boolean };
+const authors = (list: Author[] = []) =>
+  list
+    .map((a) => {
+      if (typeof a === "string") return a;
+      const cls = a.role ? "au me" : a.mentee ? "au mentee" : "au";
+      return `<span class="${cls}">${a.name}</span>${a.equal ? "*" : ""}`;
+    })
+    .join(", ");
+---
+<Base title="Curriculum Vitae" description="Curriculum vitae of Kyle J. Card, Ph.D. — evolutionary biologist studying the predictability and control of antibiotic resistance.">
+  <div class="cv-wrap wrap">
+    <!-- header -->
+    <header class="cv-head">
+      <div class="cv-id">
+        <h1 class="cv-name">{header.name}</h1>
+        <p class="cv-title">{header.title} · {header.org}</p>
+        <p class="cv-contact mono">
+          <a href={`mailto:${header.email}`}>{header.email}</a> · {header.phone} ·
+          <a href={`https://${header.website}`}>{header.website}</a><br />{header.address}
+        </p>
+      </div>
+      <a class="cv-dl" href={CV_PDF} download>
+        <span class="dl-k mono">Download</span><span class="dl-v">CV (PDF)</span>
+      </a>
+    </header>
+
+    <div class="cv-grid">
+      <!-- sticky table of contents -->
+      <nav class="cv-toc mono" aria-label="CV sections">
+        {sections.map((s: any) => <a href={`#${s.id}`}>{s.title}</a>)}
+      </nav>
+
+      <div class="cv-body">
+        {sections.map((s: any) => (
+          <section class="cv-sec" id={s.id} aria-labelledby={`${s.id}-h`}>
+            <h2 class="sec-h" id={`${s.id}-h`}>{s.title}</h2>
+
+            {/* ---- timeline ---- */}
+            {s.kind === "timeline" && (
+              <ul class="rows">
+                {s.items.map((i: any) => (
+                  <li class="row">
+                    <div class="when mono">{i.date}</div>
+                    <div class="what">
+                      <p class="rt">{i.title}</p>
+                      {i.org && <p class="ro">{i.org}</p>}
+                      {i.detail && <p class="rd" set:html={it(i.detail)} />}
+                      {i.lines && i.lines.map((l: string) => <p class="rd" set:html={it(l)} />)}
+                      {i.amount && <p class="ramt mono">{i.amount}</p>}
+                      {i.note && <p class="rnote" set:html={it(i.note)} />}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* ---- publications ---- */}
+            {s.kind === "publications" && (
+              <>
+                {s.stats && (
+                  <p class="pubstats mono">
+                    {s.stats.citations} citations · h-index {s.stats.hIndex}
+                    <span class="asof"> · {s.stats.asOf}</span>
+                  </p>
+                )}
+                <ol class="pubs">
+                  {s.items.map((p: any) => (
+                    <li class="pub">
+                      <p class="au-line" set:html={authors(p.authors)} />
+                      <p class="pub-t" set:html={it(p.title)} />
+                      <p class="pub-src">
+                        <i class="jr" set:html={it(p.journal)} /> <b>{p.volume}</b>, {p.article} ({p.year}).
+                        {p.doi && <a class="doi" href={p.doi} target="_blank" rel="noopener"> doi ↗</a>}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+
+            {/* ---- presentations ---- */}
+            {s.kind === "presentations" && (
+              <ul class="rows compact">
+                {s.items.map((i: any) => (
+                  <li class="row">
+                    <div class="when mono">{i.year}</div>
+                    <div class="what inline">
+                      <span class="rt" set:html={it(i.venue)} />
+                      <span class="badge mono">{i.type}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* ---- mentorship ---- */}
+            {s.kind === "mentorship" && (
+              <>
+                <ul class="rows compact">
+                  {s.items.map((i: any) => (
+                    <li class="row">
+                      <div class="when mono">{i.date}</div>
+                      <div class="what inline">
+                        <span class="rt">{i.name}{i.coauthor ? "*" : ""}</span>
+                        <span class="ro">{i.level}{i.institution ? ` · ${i.institution}` : ""}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {s.legendNote && <p class="legend mono">{s.legendNote}</p>}
+              </>
+            )}
+
+            {/* ---- service & outreach ---- */}
+            {s.kind === "service" && (
+              <>
+                {s.reviews && (
+                  <div class="reviews">
+                    <p class="rev-h mono">Journal peer review</p>
+                    <p class="rev-list">{s.reviews.journals.join(" · ")}</p>
+                    <p class="rev-h mono">Ad hoc / panels</p>
+                    <p class="rev-list">{s.reviews.adhoc.join(" · ")}</p>
+                  </div>
+                )}
+                <ul class="rows">
+                  {s.items.map((i: any) => (
+                    <li class="row">
+                      <div class="when mono">{i.date}</div>
+                      <div class="what">
+                        <p class="rt">{i.title}</p>
+                        {i.org && <p class="ro">{i.org}</p>}
+                        {i.body && <p class="rnote" set:html={it(i.body)} />}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* ---- media ---- */}
+            {s.kind === "media" && (
+              <ul class="rows">
+                {s.items.map((i: any) => (
+                  <li class="row">
+                    <div class="when mono">{i.date}</div>
+                    <div class="what">
+                      <p class="rt">{i.title}</p>
+                      <p class="ro">{i.outlet}</p>
+                      {i.descriptor && <p class="rnote" set:html={it(i.descriptor)} />}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* ---- references ---- */}
+            {s.kind === "references" && (
+              <ul class="refs">
+                {s.items.map((i: any) => (
+                  <li class="ref">
+                    <p class="rt">{i.name}</p>
+                    <p class="ro">{i.role}</p>
+                    <p class="rd">{i.dept}</p>
+                    {i.lines && i.lines.map((l: string) => <p class="rd">{l}</p>)}
+                    <a class="mono" href={`mailto:${i.email}`}>{i.email}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .cv-wrap { padding-top: clamp(84px, 12vh, 120px); padding-bottom: var(--s-7); }
+
+  /* header */
+  .cv-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s-4);
+    flex-wrap: wrap; padding-bottom: var(--s-4); border-bottom: 2px solid var(--ink); }
+  .cv-name { font-size: var(--t-h1); line-height: .96; }
+  .cv-title { color: var(--ink-soft); font-size: var(--t-lede); margin-top: 8px; }
+  .cv-contact { color: var(--slate); margin-top: 14px; line-height: 1.9; letter-spacing: .1em; }
+  .cv-dl { display: inline-flex; flex-direction: column; gap: 2px; text-decoration: none;
+    border: 1px solid var(--teal); border-radius: var(--radius); padding: 12px 22px; background: var(--paper-panel);
+    transition: background .2s, color .2s; white-space: nowrap; }
+  .cv-dl:hover { background: var(--teal); }
+  .cv-dl:hover .dl-k, .cv-dl:hover .dl-v { color: var(--paper); }
+  .dl-k { color: var(--slate); } .dl-v { font-family: var(--font-display); font-size: 1.3rem; color: var(--ink); }
+
+  /* layout: sticky TOC + body */
+  .cv-grid { display: grid; grid-template-columns: 200px 1fr; gap: var(--s-6); margin-top: var(--s-5); }
+  .cv-toc { position: sticky; top: 84px; align-self: start; display: flex; flex-direction: column; gap: 9px;
+    max-height: calc(100vh - 110px); overflow: auto; }
+  .cv-toc a { color: var(--slate); text-decoration: none; letter-spacing: .12em; line-height: 1.3; }
+  .cv-toc a:hover { color: var(--teal); }
+
+  .cv-sec { margin-bottom: var(--s-6); scroll-margin-top: 84px; }
+  .sec-h { font-size: var(--t-h3); padding-bottom: 8px; margin-bottom: var(--s-3);
+    border-bottom: 1px solid var(--rule); color: var(--ink); }
+
+  /* timeline-style rows */
+  .rows { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+  .rows.compact { gap: 12px; }
+  .row { display: grid; grid-template-columns: 132px 1fr; gap: var(--s-3); align-items: baseline; }
+  .when { color: var(--slate); padding-top: 2px; letter-spacing: .08em; }
+  .rt { font-weight: 500; color: var(--ink); }
+  .ro { color: var(--ink-soft); font-size: .96rem; }
+  .rd { color: var(--ink-soft); font-size: .94rem; }
+  .ramt { color: var(--teal); margin-top: 4px; }
+  .rnote { color: var(--ink-soft); font-size: .92rem; margin-top: 6px; line-height: 1.6; max-width: var(--measure); }
+  .what.inline { display: flex; justify-content: space-between; gap: var(--s-3); align-items: baseline; flex-wrap: wrap; }
+  .what.inline .ro { text-align: right; }
+  .badge { color: var(--slate); border: 1px solid var(--rule); border-radius: 100px; padding: 2px 10px;
+    font-size: .6rem; white-space: nowrap; }
+  .legend { color: var(--ink-faint); margin-top: var(--s-3); }
+
+  /* publications */
+  .pubstats { color: var(--teal); margin-bottom: var(--s-4); letter-spacing: .1em; }
+  .pubstats .asof { color: var(--ink-faint); }
+  .pubs { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: var(--s-3); }
+  .pub { padding-left: 6px; }
+  .pub::marker { color: var(--slate); font-family: var(--font-mono); font-size: .8rem; }
+  .au-line { font-size: .95rem; color: var(--ink-soft); }
+  .au-line :global(.me) { color: var(--teal); font-weight: 600; }
+  .au-line :global(.mentee) { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--rule); }
+  .pub-t { color: var(--ink); font-weight: 500; margin: 3px 0; }
+  .pub-src { color: var(--ink-soft); font-size: .94rem; }
+  .doi { white-space: nowrap; }
+
+  /* reviews block */
+  .reviews { margin-bottom: var(--s-4); }
+  .rev-h { color: var(--slate); margin-bottom: 4px; margin-top: var(--s-2); }
+  .rev-list { color: var(--ink-soft); font-size: .94rem; line-height: 1.7; }
+
+  /* references */
+  .refs { list-style: none; padding: 0; margin: 0; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-4); }
+  .ref .rt { font-size: 1.05rem; }
+  .ref a { display: inline-block; margin-top: 6px; }
+
+  @media (max-width: 880px) {
+    .cv-grid { grid-template-columns: 1fr; gap: var(--s-3); }
+    .cv-toc { position: static; flex-flow: row wrap; gap: 8px 16px; max-height: none;
+      padding-bottom: var(--s-3); border-bottom: 1px solid var(--rule-soft); }
+  }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; gap: 4px; }
+    .when { padding-top: 0; }
+    .what.inline { flex-direction: column; }
+    .what.inline .ro { text-align: left; }
+  }
+  @media print {
+    .cv-toc, .cv-dl, :global(.nav), :global(.foot), :global(.skip) { display: none !important; }
+    .cv-grid { grid-template-columns: 1fr; }
+    .cv-wrap { padding-top: 0; }
+    body { font-size: 10.5pt; }
+  }
+</style>

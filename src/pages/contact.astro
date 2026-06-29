@@ -1,0 +1,64 @@
+---
+import Base from "../layouts/Base.astro";
+import { Image } from "astro:assets";
+import { SITE, LINKS, CV_PDF } from "../data/site";
+import ccf from "../../assets/logos/logo-ccf.png";
+import hhmi from "../../assets/logos/hhmi.png";
+---
+<Base title="Contact" description="Contact Kyle J. Card — collaborations, prospective students, and talks.">
+  <section class="contact wrap">
+    <p class="eyebrow mono reveal">Contact</p>
+    <h1 class="big reveal">Let's talk.</h1>
+    <p class="lead measure reveal">
+      I'm always glad to hear from prospective students and postdocs, collaborators working on the evolution of
+      resistance, and anyone who'd like a talk or a conversation. Email is the surest way to reach me.
+    </p>
+
+    <a class="bigmail reveal" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+
+    <div class="cgrid">
+      <section class="block reveal" aria-labelledby="loc-h">
+        <h2 class="bh mono" id="loc-h">Location</h2>
+        <p class="bd">{SITE.org}<br />{SITE.dept}<br />{SITE.address}</p>
+      </section>
+
+      <section class="block reveal" aria-labelledby="el-h">
+        <h2 class="bh mono" id="el-h">Elsewhere</h2>
+        <ul class="links">
+          <li><a href={LINKS.scholar} target="_blank" rel="noopener">Google Scholar ↗</a></li>
+          <li><a href={CV_PDF} download>Curriculum Vitae (PDF) ↓</a></li>
+          <li><a href="/cv">CV — full record</a></li>
+        </ul>
+      </section>
+
+      <section class="block reveal affil" aria-labelledby="af-h">
+        <h2 class="bh mono" id="af-h">Affiliations</h2>
+        <div class="logos">
+          <Image src={ccf} alt="Cleveland Clinic" class="logo" densities={[1, 2]} />
+          <Image src={hhmi} alt="Howard Hughes Medical Institute" class="logo" densities={[1, 2]} />
+        </div>
+      </section>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact { padding-top: clamp(96px, 16vh, 168px); padding-bottom: var(--s-8); }
+  .eyebrow { color: var(--slate); margin-bottom: var(--s-3); }
+  .big { font-size: var(--t-h1); margin-bottom: var(--s-3); }
+  .lead { color: var(--ink-soft); font-size: var(--t-lede); margin-bottom: var(--s-5); }
+  .bigmail { display: inline-block; font-family: var(--font-display); font-weight: 400;
+    font-size: clamp(1.6rem, 1rem + 3vw, 3.2rem); color: var(--ink); text-decoration: none; letter-spacing: -.01em;
+    border-bottom: 2px solid var(--teal); padding-bottom: 4px; margin-bottom: var(--s-7); }
+  .bigmail:hover { color: var(--teal); }
+
+  .cgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s-5);
+    border-top: 1px solid var(--rule); padding-top: var(--s-5); }
+  .bh { color: var(--slate); margin-bottom: var(--s-3); }
+  .bd { color: var(--ink-soft); line-height: 1.8; }
+  .links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .links a { color: var(--ink); text-decoration: none; }
+  .links a:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 3px; }
+  .logos { display: flex; flex-wrap: wrap; gap: var(--s-4); align-items: center; }
+  .logo { height: 44px; width: auto; opacity: .85; }
+</style>

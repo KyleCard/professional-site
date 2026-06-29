@@ -10,18 +10,14 @@ mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const shots = [
-  { out: "v2-01-hero.png", path: "/", w: 1440, h: 900, settle: 1500 },
-  { out: "v2-02-question.png", path: "/", w: 1440, h: 900, scrollTo: '[data-stop="0"]', settle: 1700 },
-  { out: "v2-03-clinic.png", path: "/", w: 1440, h: 900, scrollTo: '[data-stop="1"]', settle: 1700 },
-  { out: "v2-04-clinic-mid.png", path: "/", w: 1440, h: 900, scrollTo: '[data-stop="1"] .fig:last-of-type', settle: 1500 },
-  { out: "v2-05-history.png", path: "/", w: 1440, h: 900, scrollTo: '[data-stop="2"]', settle: 1700 },
-  { out: "v2-06-summit.png", path: "/", w: 1440, h: 900, scrollTo: '[data-stop="4"]', settle: 1700 },
-  { out: "v2-06b-chip.png", path: "/", w: 1440, h: 980, scrollTo: ".chip-feature", settle: 2200 },
-  { out: "v2-06c-chip-mobile.png", path: "/", w: 390, h: 844, dsf: 2, mobile: true, scrollTo: ".chip-feature", settle: 2000 },
-  { out: "v2-07-team.png", path: "/", w: 1440, h: 980, scrollTo: ".team-sec", settle: 900 },
-  { out: "v2-08-hero-mobile.png", path: "/", w: 390, h: 844, dsf: 2, mobile: true, settle: 1500 },
-  { out: "v2-09-clinic-mobile.png", path: "/", w: 390, h: 844, dsf: 2, mobile: true, scrollTo: '[data-stop="1"]', settle: 1200 },
-  { out: "v2-10-hero-reduced.png", path: "/", w: 1440, h: 900, reduce: true, settle: 1000 },
+  { out: "pg-cv-top.png", path: "/cv/", w: 1440, h: 980, settle: 700 },
+  { out: "pg-cv-pubs.png", path: "/cv/", w: 1440, h: 980, scrollTo: "#publications", settle: 700 },
+  { out: "pg-contact.png", path: "/contact/", w: 1440, h: 900, settle: 700 },
+  { out: "pg-blog.png", path: "/blog/", w: 1440, h: 980, settle: 700 },
+  { out: "pg-post-essay.png", path: "/blog/2018-bad-science-biases-big-data/", w: 1440, h: 980, settle: 700 },
+  { out: "pg-post-video.png", path: "/blog/2020-genetic-background-resistance/", w: 1440, h: 900, settle: 900 },
+  { out: "pg-cv-mobile.png", path: "/cv/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
+  { out: "pg-blog-mobile.png", path: "/blog/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
 ];
 
 class CDP {
