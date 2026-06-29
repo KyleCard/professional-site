@@ -5,35 +5,56 @@
 members:
   - order: 1
     name: "Justin Creary"
-    role: "Graduate Student"
+    role: "Ph.D. Student"
     org: "CWRU"
     photo: "justin_creary.jpeg"
-    bio: "Justin is investigating how prior evolutionary history under varying concentrations of tobramycin affects the ability of *P. aeruginosa* to evolve resistance to clinically relevant second-line drugs."
+    bio: "Justin is investigating how prior evolutionary history under varying antibiotic concentrations affects the ability of pathogens to evolve resistance to clinically relevant second-line drugs."
 
   - order: 2
-    name: "Amira Stocks"
-    role: "Undergraduate Student"
-    org: "CWRU"
-    photo: "amira_stocks.jpeg"
-    bio: "Amira is investigating the impact of biofilm formation and population bottleneck size on the evolutionary trajectories of antibiotic resistance in *P. aeruginosa* and how these pathways differ from planktonic populations."
-
-  - order: 3
     name: "Shiva Ayyar"
-    role: "Undergraduate Student"
+    role: "Master's Student"
     org: "CWRU"
     photo: "shiva_ayyar.jpeg"
-    bio: "Shiva is examining the combined impact of genetic background and mutation supply on the potential of *P. aeruginosa* to evolve resistance to several first-line antibiotics."
+    bio: "Shiva is applying a 'coupon collector' framework to genomic data from our PNAS *S. aureus* study, exploring how idiosyncratic epistasis — where a mutation's effect depends on specific prior mutations, not just overall fitness — shapes how much of the adaptive landscape a population explores."
+
+  - order: 3
+    name: "Josh Nworie"
+    role: "Postbaccalaureate"
+    org: ""
+    photo: "josh_nworie.jpg"
+    bio: "Josh is examining how the Collateral Response Score (CRS) — derived in our PNAS study — changes across different clinical backgrounds and environmental contexts."
 
   - order: 4
-    name: "Rohan Desai"
-    role: "Undergraduate Student"
-    org: "Vanderbilt"
-    photo: "rohan_desai.jpeg"
-    bio: "Rohan joined our lab this summer and is working with Justin and Shiva to knock out the methyl-directed mismatch repair gene *mutS* in *P. aeruginosa*, thereby increasing its point-mutation rate. They will use these mutants in their study of mutation supply."
+    name: "Amira Stocks"
+    role: "Undergraduate"
+    org: "CWRU"
+    photo: "amira_stocks.jpeg"
+    bio: "Amira is investigating the impact of biofilm formation on the evolutionary trajectories of antibiotic resistance and how these pathways differ across varying backgrounds."
 
   - order: 5
+    name: "Rohan Desai"
+    role: "Undergraduate"
+    org: "Vanderbilt"
+    photo: "rohan_desai.jpeg"
+    bio: "Rohan is working remotely with our group to write the analysis pipeline for several projects."
+
+  - order: 6
+    name: "Brandon Kakuda"
+    role: "Undergraduate"
+    org: "CWRU"
+    photo: "brandon_kakuda.png"
+    bio: "Brandon is asking how selection strength and background impact the evolution of antibiotic resistance and subsequent drug tradeoffs."
+
+  - order: 7
+    name: "Drew Sager"
+    role: "Undergraduate"
+    org: "University of Notre Dame"
+    photo: "drew_sager.jpg"
+    bio: "Drew is a visiting summer student working with the team performing antibiotic time-kill assays and experimental evolution."
+
+  - order: 8
     name: "Aryan Agarwal"
     role: "High School Student"
     org: ""
     photo: "aryan_agarwal.jpeg"
-    bio: "Aryan is a high school student with us this summer. He is working with Shiva, using previous whole-genome sequence data from experimentally evolved *S. aureus* lines to derive a 'heterogeneity score,' and assessing whether this metric correlates with particular drug trade-offs."
+    bio: "Aryan is using genomic data from our PNAS *S. aureus* study to derive a 'heterogeneity score,' and assessing whether this metric correlates with particular drug tradeoffs."
