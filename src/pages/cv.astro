@@ -7,16 +7,21 @@ import { CV_PDF, LINKS } from "../data/site";
 const cv = yaml.load(cvYaml) as any;
 const { header, sections } = cv;
 
-// *text* → italic (species + journal names)
-const it = (s = "") => s.replace(/\*([^*]+)\*/g, "<i>$1</i>");
+// inline markup in copy: [text](url) → link, *text* → italic (species + journal names)
+const it = (s = "") =>
+  s
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*([^*]+)\*/g, "<i>$1</i>");
 
-// author list: highlight Kyle (role first/senior), underline direct mentees, append * for equal contribution
+// author list: highlight Kyle (by name — covers every entry), underline direct mentees,
+// append * for equal contribution
 type Author = string | { name: string; role?: string; mentee?: boolean; equal?: boolean };
+const isKyle = (name: string) => /^Card\s+K/i.test(name);
 const authors = (list: Author[] = []) =>
   list
     .map((a) => {
-      if (typeof a === "string") return a;
-      const cls = a.role ? "au me" : a.mentee ? "au mentee" : "au";
+      if (typeof a === "string") return isKyle(a) ? `<span class="au me">${a}</span>` : a;
+      const cls = a.role || isKyle(a.name) ? "au me" : a.mentee ? "au mentee" : "au";
       return `<span class="${cls}">${a.name}</span>${a.equal ? "*" : ""}`;
     })
     .join(", ");
@@ -89,6 +94,9 @@ const authors = (list: Author[] = []) =>
                     </li>
                   ))}
                 </ol>
+                <p class="pub-legend mono">
+                  <span class="lg-eq">*</span> Equal contribution · <span class="lg-mentee">Underline</span> = direct mentee
+                </p>
               </>
             )}
 
@@ -158,7 +166,9 @@ const authors = (list: Author[] = []) =>
                   <li class="row">
                     <div class="when mono">{i.date}</div>
                     <div class="what">
-                      <p class="rt">{i.title}</p>
+                      <p class="rt">
+                        {i.link ? <a href={i.link} target="_blank" rel="noopener">{i.title}</a> : i.title}
+                      </p>
                       <p class="ro">{i.outlet}</p>
                       {i.descriptor && <p class="rnote" set:html={it(i.descriptor)} />}
                     </div>
@@ -225,7 +235,7 @@ const authors = (list: Author[] = []) =>
   .rd { color: var(--ink-soft); font-size: .94rem; }
   .ramt { color: var(--teal); margin-top: 4px; }
   .rnote { color: var(--ink-soft); font-size: .92rem; margin-top: 6px; line-height: 1.6; max-width: var(--measure); }
-  .what.inline { display: flex; justify-content: space-between; gap: var(--s-3); align-items: baseline; flex-wrap: wrap; }
+  .what.inline { display: grid; grid-template-columns: 1fr auto; gap: var(--s-2) var(--s-3); align-items: baseline; }
   .what.inline .ro { text-align: right; }
   .badge { color: var(--slate); border: 1px solid var(--rule); border-radius: 100px; padding: 2px 10px;
     font-size: .6rem; white-space: nowrap; }
@@ -243,6 +253,10 @@ const authors = (list: Author[] = []) =>
   .pub-t { color: var(--ink); font-weight: 500; margin: 3px 0; }
   .pub-src { color: var(--ink-soft); font-size: .94rem; }
   .doi { white-space: nowrap; }
+  .pub-legend { margin-top: var(--s-4); padding-top: var(--s-2); border-top: 1px solid var(--rule-soft);
+    color: var(--ink-faint); letter-spacing: .1em; }
+  .pub-legend .lg-eq { color: var(--teal); font-weight: 600; }
+  .pub-legend .lg-mentee { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--rule); }
 
   /* reviews block */
   .reviews { margin-bottom: var(--s-4); }
@@ -263,7 +277,7 @@ const authors = (list: Author[] = []) =>
   @media (max-width: 560px) {
     .row { grid-template-columns: 1fr; gap: 4px; }
     .when { padding-top: 0; }
-    .what.inline { flex-direction: column; }
+    .what.inline { grid-template-columns: 1fr; }
     .what.inline .ro { text-align: left; }
   }
   @media print {

@@ -10,14 +10,11 @@ mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const shots = [
-  { out: "pg-cv-top.png", path: "/cv/", w: 1440, h: 980, settle: 700 },
-  { out: "pg-cv-pubs.png", path: "/cv/", w: 1440, h: 980, scrollTo: "#publications", settle: 700 },
-  { out: "pg-contact.png", path: "/contact/", w: 1440, h: 900, settle: 700 },
-  { out: "pg-blog.png", path: "/blog/", w: 1440, h: 980, settle: 700 },
-  { out: "pg-post-essay.png", path: "/blog/2018-bad-science-biases-big-data/", w: 1440, h: 980, settle: 700 },
-  { out: "pg-post-video.png", path: "/blog/2020-genetic-background-resistance/", w: 1440, h: 900, settle: 900 },
-  { out: "pg-cv-mobile.png", path: "/cv/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
-  { out: "pg-blog-mobile.png", path: "/blog/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
+  { out: "r3-contact.png", path: "/contact/", w: 1440, h: 1000, settle: 800 },
+  { out: "r3-contact-foot.png", path: "/contact/", w: 1440, h: 760, scrollTo: ".foot", settle: 700 },
+  { out: "r3-cv-foot.png", path: "/cv/", w: 1440, h: 700, scrollTo: ".foot", settle: 700 },
+  { out: "r3-home-foot.png", path: "/", w: 1440, h: 900, scrollTo: ".foot", settle: 1200 },
+  { out: "r3-contact-mobile.png", path: "/contact/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
 ];
 
 class CDP {
