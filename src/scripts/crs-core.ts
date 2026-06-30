@@ -145,16 +145,21 @@ function erf(x: number) {
 }
 const ncdf = (z: number) => 0.5 * (1 + erf(z / Math.SQRT2));
 
-export function densityStats(comps: MixComp[]): { mean: number; pPos: number; straddle: number; reading: string } {
+export type Confidence = "confident" | "cautious" | "uncertain";
+export function densityStats(comps: MixComp[]): { mean: number; pPos: number; straddle: number; confidence: Confidence; reading: string } {
   const w = comps.reduce((s, c) => s + c.weight, 0) || 1;
   const pPos = comps.reduce((s, c) => s + c.weight * ncdf(c.mean / c.sd), 0) / w;
   const straddle = Math.min(pPos, 1 - pPos);
   const mean = mixtureMean(comps);
-  let reading: string;
-  if (straddle >= 0.3) reading = "Wide and straddling zero — genuinely uncertain. We can't call the direction.";
-  else if (Math.abs(mean) >= 0.45 && straddle < 0.12) reading = "Narrow and far from zero — a confident, actionable prediction.";
-  else reading = `Leaning collateral ${mean > 0 ? "resistance" : "sensitivity"}, but with real spread — read it cautiously.`;
-  return { mean, pPos, straddle, reading };
+  let confidence: Confidence;
+  if (straddle >= 0.3) confidence = "uncertain";
+  else if (Math.abs(mean) >= 0.45 && straddle < 0.12) confidence = "confident";
+  else confidence = "cautious";
+  const reading =
+    confidence === "uncertain" ? "Wide and straddling zero — genuinely uncertain. We can't call the direction."
+    : confidence === "confident" ? "Narrow and far from zero — a confident, actionable prediction."
+    : `Leaning collateral ${mean > 0 ? "resistance" : "sensitivity"}, but with real spread — read it cautiously.`;
+  return { mean, pPos, straddle, confidence, reading };
 }
 
 export const DENS = { w: 380, h: 184, top: 36, base: 146, x0: TRACK.x0, x1: TRACK.x1 };
@@ -175,12 +180,19 @@ export function renderDensity(comps: MixComp[], point: number): string {
       `<text x="${tx}" y="${DENS.base + 20}" class="crs-dlab" text-anchor="${anchor}">${label}</text>`;
   };
   const mx = px(point).toFixed(1);
-  const gid = `cg${Math.random().toString(36).slice(2, 9)}`; // unique per render (no id collisions)
+  // Unique ids per render (no collisions). The fill is a full-width gradient RECT
+  // CLIPPED to the density area — not a gradient-filled path. Chromium silently
+  // drops a userSpaceOnUse gradient on a thin/near-degenerate path (a narrow,
+  // confident density), but always rasterizes it on a rect; the clip restricts it
+  // to the curve. (This is the real fix for the narrow-shape no-fill bug.)
+  const rid = Math.random().toString(36).slice(2, 9);
+  const gid = `cg${rid}`, cid = `cc${rid}`;
   return (
     `<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${px(-1).toFixed(1)}" y1="0" x2="${px(1).toFixed(1)}" y2="0">` +
-      `<stop offset="0" stop-color="var(--slate)"/><stop offset="0.5" stop-color="var(--rule)"/><stop offset="1" stop-color="var(--amber)"/></linearGradient></defs>` +
+      `<stop offset="0" stop-color="var(--slate)"/><stop offset="0.5" stop-color="var(--rule)"/><stop offset="1" stop-color="var(--amber)"/></linearGradient>` +
+      `<clipPath id="${cid}"><path d="${fill}"/></clipPath></defs>` +
     `<line x1="${px(0).toFixed(1)}" y1="${DENS.top - 8}" x2="${px(0).toFixed(1)}" y2="${DENS.base}" class="crs-dzero"/>` +
-    `<path class="crs-dfill" d="${fill}" fill="url(#${gid})"/>` +
+    `<rect class="crs-dfill" x="${px(-1).toFixed(1)}" y="0" width="${(px(1) - px(-1)).toFixed(1)}" height="${DENS.base}" fill="url(#${gid})" clip-path="url(#${cid})"/>` +
     `<path class="crs-dline" d="${line}" fill="none"/>` +
     `<line x1="${px(-1).toFixed(1)}" y1="${DENS.base}" x2="${px(1).toFixed(1)}" y2="${DENS.base}" class="crs-daxis"/>` +
     tick(-1, "−1 sensitivity", "start") + tick(0, "0", "middle") + tick(1, "+1 resistance", "end") +
@@ -238,6 +250,142 @@ export function renderTrack(crs: number): string {
     `<g class="crs-marker" transform="translate(${x} 0)">` +
       `<path d="M0 ${TRACK.y - 16} l7 -11 l-14 0 z" class="crs-marker-tri"/>` +
       `<text x="0" y="${TRACK.y - 31}" class="crs-marker-val" text-anchor="middle">${fmtCRS(crs)}</text>` +
+    `</g>`
+  );
+}
+
+// ===========================================================================
+//  Layer 4 — the CRS landscape (context field)
+//  Two context axes (environment on x, inflammation on y, each 0→1). The local
+//  CRS is the example's confident lab value pulled toward 0 (uncertain) as the
+//  context turns host-like / inflamed:
+//      localCrs = baseCrs · (1 − clamp(env·pull₀ + inflam·pull₁, 0, 1))
+//  Rendered as a hypsometric-banded contour field (rhymes with the site's
+//  fitness-landscape spine) with a draggable marker. Local uncertainty is read
+//  off the SAME Layer-3 machinery (genComponents + densityStats), so the layers
+//  connect: drag toward the host corner and the prediction widens to a coin-flip.
+// ===========================================================================
+type Ctx = CrsConfig["context"];
+type Ex = Ctx["example"];
+
+export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+export function localCrs(env: number, inflam: number, ex: Ex): number {
+  const pull = clamp01(env * ex.pull[0] + inflam * ex.pull[1]);
+  return ex.baseCrs * (1 - pull);
+}
+
+const lerp3 = (a: number[], b: number[], t: number) =>
+  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",")})`;
+
+// Field tint. The example spans only [baseCrs → 0], a sliver of the absolute
+// CRS scale, so an absolute slate→rule→amber ramp washes out. Instead we span
+// that range: deep (confident, cool for sensitivity / warm for resistance) →
+// pale (uncertain). The legend labels these endpoints, so it stays honest while
+// reading as terrain. RGB literals are tuned to the tokens.css palette family.
+export const FIELD_DEEP_COOL = [40, 74, 84];   // confident collateral sensitivity
+export const FIELD_DEEP_WARM = [150, 96, 12];  // confident collateral resistance
+export const FIELD_PALE = [214, 204, 182];     // ≈ 0, genuinely uncertain
+export function fieldColor(crs: number, baseCrs: number): string {
+  const t = Math.abs(baseCrs) < 1e-6 ? 0 : Math.min(1, Math.max(0, crs / baseCrs)); // 1 deep … 0 pale
+  return lerp3(FIELD_PALE, baseCrs < 0 ? FIELD_DEEP_COOL : FIELD_DEEP_WARM, t);
+}
+
+// field geometry (one SVG user-unit system; plot box inside, labels around it)
+export const FIELD = { w: 380, h: 360, x0: 58, x1: 356, y0: 18, y1: 300 };
+export const fieldX = (env: number) => FIELD.x0 + env * (FIELD.x1 - FIELD.x0);
+export const fieldY = (inflam: number) => FIELD.y1 - inflam * (FIELD.y1 - FIELD.y0);
+export const xToEnv = (sx: number) => (sx - FIELD.x0) / (FIELD.x1 - FIELD.x0);
+export const yToInflam = (sy: number) => (FIELD.y1 - sy) / (FIELD.y1 - FIELD.y0);
+
+// convex-polygon half-plane clip (Sutherland–Hodgman); keeps points where f(p) ≥ 0.
+type Pt = [number, number];
+function clipHalf(poly: Pt[], f: (p: Pt) => number): Pt[] {
+  const out: Pt[] = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const da = f(a), db = f(b);
+    if (da >= 0) out.push(a);
+    if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+  }
+  return out;
+}
+
+// static field: hypsometric CRS bands + iso-CRS contour lines + axis frame.
+// The field is linear in s = env·pull₀ + inflam·pull₁ until s ≥ 1, where the
+// clamp pins CRS at 0 — a flat "uncertainty plateau" in the host-like corner.
+// So every contour is a straight line s = k, computed and clipped analytically.
+export function renderFieldBg(ctx: Ctx): string {
+  const ex = ctx.example, b = ex.baseCrs, [p0, p1] = ex.pull;
+  const s = (p: Pt) => p0 * p[0] + p1 * p[1];
+  const crsAt = (sv: number) => b * (1 - Math.min(1, Math.max(0, sv)));
+
+  // CRS levels baseCrs → 0; k(level) = 1 − level/base maps a level to its s-threshold.
+  const levels: number[] = [];
+  for (let L = b; L <= 1e-4; L += 0.1) levels.push(+L.toFixed(4));
+  if (levels[levels.length - 1] !== 0) levels.push(0);
+  const ks = levels.map((L) => 1 - L / b);          // evenly spaced 0 … 1
+  const kCap = p0 + p1;                              // largest s the square allows
+  const bounds = kCap > 1 ? [...ks, kCap] : [...ks]; // final band (s ≥ 1) is the plateau
+
+  const sq: Pt[] = [[0, 0], [1, 0], [1, 1], [0, 1]];
+  const toXY = (p: Pt) => `${fieldX(p[0]).toFixed(1)},${fieldY(p[1]).toFixed(1)}`;
+  let bands = "";
+  for (let i = 0; i < bounds.length - 1; i++) {
+    const lo = bounds[i], hi = bounds[i + 1];
+    let poly = clipHalf(sq, (p) => s(p) - lo);
+    poly = clipHalf(poly, (p) => hi - s(p));
+    if (poly.length < 3) continue;
+    const col = fieldColor(crsAt((lo + hi) / 2), b);
+    bands += `<polygon class="crs-fband" points="${poly.map(toXY).join(" ")}" fill="${col}" stroke="${col}" stroke-width="0.75"/>`;
+  }
+
+  // contour for s = k: p0·env + p1·inflam = k, clipped to the unit square.
+  const seg = (k: number): [Pt, Pt] | null => {
+    const pts: Pt[] = [];
+    const add = (x: number, y: number) => {
+      if (x >= -1e-6 && x <= 1 + 1e-6 && y >= -1e-6 && y <= 1 + 1e-6)
+        pts.push([Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, y))]);
+    };
+    if (Math.abs(p1) > 1e-9) { add(0, k / p1); add(1, (k - p0) / p1); }
+    if (Math.abs(p0) > 1e-9) { add(k / p0, 0); add((k - p1) / p0, 1); }
+    if (pts.length < 2) return null;
+    let best: [Pt, Pt] = [pts[0], pts[1]], bd = -1;
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      const d = (pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2;
+      if (d > bd) { bd = d; best = [pts[i], pts[j]]; }
+    }
+    return best;
+  };
+  let contours = "";
+  for (let i = 1; i < ks.length; i++) {
+    const ln = seg(ks[i]); if (!ln) continue;
+    const zero = levels[i] === 0;                    // the CRS = 0 plateau edge
+    contours += `<line class="crs-fcontour${zero ? " zero" : ""}" x1="${fieldX(ln[0][0]).toFixed(1)}" y1="${fieldY(ln[0][1]).toFixed(1)}" x2="${fieldX(ln[1][0]).toFixed(1)}" y2="${fieldY(ln[1][1]).toFixed(1)}"/>`;
+  }
+
+  const cx = ((FIELD.x0 + FIELD.x1) / 2).toFixed(1), cy = ((FIELD.y0 + FIELD.y1) / 2).toFixed(1);
+  const [ax, ay] = ctx.axes;
+  const frame = `<rect x="${FIELD.x0}" y="${FIELD.y0}" width="${FIELD.x1 - FIELD.x0}" height="${FIELD.y1 - FIELD.y0}" class="crs-fframe"/>`;
+  const labels =
+    `<text x="${cx}" y="${FIELD.y1 + 22}" class="crs-faxis" text-anchor="middle">${esc(ax.label)}: ${esc(ax.from)} → ${esc(ax.to)}</text>` +
+    `<text transform="translate(15 ${cy}) rotate(-90)" class="crs-faxis" text-anchor="middle">${esc(ay.label)}: ${esc(ay.from)} → ${esc(ay.to)}</text>`;
+  return `<g class="crs-field-bg">${bands}${contours}${frame}${labels}</g>`;
+}
+
+// one marker on the field. interactive → focusable + arrow-key driven (the JS
+// island swaps the static sample markers for a single draggable one).
+export function renderFieldMarker(env: number, inflam: number, ex: Ex, interactive = false): string {
+  const c = localCrs(env, inflam, ex);
+  const x = fieldX(env).toFixed(1), y = fieldY(inflam).toFixed(1);
+  const attrs = interactive
+    ? ` class="crs-fmark is-draggable" tabindex="0" role="img" aria-label="${esc(`Context marker — local CRS ${fmtCRS(c)}. Arrow keys move it across environment and inflammation.`)}"`
+    : ` class="crs-fmark"`;
+  return (
+    `<g${attrs} transform="translate(${x} ${y})">` +
+      `<circle class="crs-fmark-halo" r="13"/>` +
+      `<circle class="crs-fmark-dot" r="8" fill="${fieldColor(c, ex.baseCrs)}"/>` +
+      `<text class="crs-fmark-val" y="-15" text-anchor="middle">${fmtCRS(c)}</text>` +
     `</g>`
   );
 }

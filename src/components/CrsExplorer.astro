@@ -3,6 +3,7 @@ import { CRS } from "../data/crs";
 import {
   renderPlot, renderTrack, readout, tallyRows, renderProfileRows,
   renderDensity, densityStats, genComponents, type MixComp,
+  renderFieldBg, renderFieldMarker, localCrs, fmtCRS,
 } from "../scripts/crs-core";
 
 // ---- Layer 1 server render (no-JS / pre-hydration fallback) ----
@@ -27,15 +28,28 @@ const densConf = renderDensity(exConf, CRS.pathways[0].crs[0]);
 const densUnc = renderDensity(exUnc, CRS.pathways[0].crs[3]);
 const readConf = densityStats(exConf).reading;
 const readUnc = densityStats(exUnc).reading;
+
+// ---- Layer 4: context field (a "landscape of predictability") ----
+const ex = CRS.context.example;
+// no-JS field = static landscape + two labelled sample points (lab/low, host/high)
+const field0 =
+  renderFieldBg(CRS.context) +
+  `<g class="crs-fmarkers">${renderFieldMarker(0, 0, ex)}${renderFieldMarker(1, 1, ex)}</g>`;
+const cLab = fmtCRS(localCrs(0, 0, ex));   // confident lab value (= baseCrs)
+const cHost = fmtCRS(localCrs(1, 1, ex));  // host-like corner (≈ 0)
+// interactive readout's initial state (lab/low corner; JS re-renders on hydrate)
+const fComps0 = genComponents(localCrs(0, 0, ex));
+const fdens0 = renderDensity(fComps0, localCrs(0, 0, ex));
+const fread0 = densityStats(fComps0).reading;
 ---
 <section class="crs" aria-labelledby="crs-h">
   <div class="wrap">
     <p class="card-lab mono reveal">The Card Lab · interactive</p>
     <h2 class="title crs-title reveal" id="crs-h">Will the next drug still <span class="peak">work?</span></h2>
     <p class="crs-intro measure reveal">
-      When a pathogen evolves resistance to one drug, its susceptibility to others can shift with it. The
-      <strong>Collateral Response Score</strong> captures two things at once: the <em>direction</em> of that shift —
-      its sign — and how <em>predictable</em> the direction is — its magnitude.
+      When a pathogen evolves resistance to one drug, its susceptibility to others can change. The
+      <strong>Collateral Response Score</strong> captures the <em>direction</em> of that change —
+      its sign — and how <em>predictable</em> it is — its magnitude.
     </p>
 
     <div class="crs-card reveal">
@@ -46,6 +60,8 @@ const readUnc = densityStats(exUnc).reading;
           <span class="crs-tab-n mono">02</span> Pathways</button>
         <button role="tab" id="crs-tab-3" aria-controls="crs-panel-3" aria-selected="false" tabindex="-1" class="crs-tab" type="button">
           <span class="crs-tab-n mono">03</span> Distribution</button>
+        <button role="tab" id="crs-tab-4" aria-controls="crs-panel-4" aria-selected="false" tabindex="-1" class="crs-tab" type="button">
+          <span class="crs-tab-n mono">04</span> Context</button>
       </div>
 
       <!-- ───────── PANEL 1 · Layer 1 calculator ───────── -->
@@ -97,7 +113,7 @@ const readUnc = densityStats(exUnc).reading;
       <!-- ───────── PANEL 2 · Layer 2 pathway profile ───────── -->
       <div role="tabpanel" id="crs-panel-2" aria-labelledby="crs-tab-2" class="crs-panel" data-crs-pathways>
         <h3 class="crs-panel-h">Pathway collateral profile</h3>
-        <p class="crs-howto mono">Step out to a panel of second-line drugs. An early evolutionary fork sends a
+        <p class="crs-howto mono">A panel of second-line drugs. An early evolutionary fork sends a
           population down one of two routes — and the collateral profile flips with the path.</p>
 
         <!-- interactive (revealed by JS) -->
@@ -107,8 +123,8 @@ const readUnc = densityStats(exUnc).reading;
             <button type="button" role="radio" aria-checked="false" tabindex="-1" class="crs-pw-btn" data-pw="1">Pathway 2</button>
           </div>
           <div class="crs-profile" id="crs-profile"></div>
-          <p class="crs-pcap">Knowing which route a pathogen took tells you which second-line drugs will still work —
-            an early fork yields opposite, partly predictable collateral profiles.</p>
+          <p class="crs-pcap">Knowing which route a pathogen took tells a clinician which second-line drugs will still work.
+            In this example, an early fork yields opposite, partly predictable collateral profiles.</p>
           <p class="visually-hidden" aria-live="polite" id="crs-pw-live"></p>
         </div>
 
@@ -122,9 +138,9 @@ const readUnc = densityStats(exUnc).reading;
       <!-- ───────── PANEL 3 · Layer 3 distribution ───────── -->
       <div role="tabpanel" id="crs-panel-3" aria-labelledby="crs-tab-3" class="crs-panel" data-crs-dist>
         <h3 class="crs-panel-h">CRS as a distribution</h3>
-        <p class="crs-howto mono">A CRS is an estimate, not a verdict. Resampling it gives a distribution — and its
-          <em>width</em> is the actionable part: narrow and far from zero is a confident call; wide, or split across
-          zero, means we genuinely can't say which way evolution will go.</p>
+        <p class="crs-howto mono">A CRS is an estimate, not a verdict. Resampling it gives a distribution, with its
+          <em>width</em> providing actionable information: narrow and far from zero is a confident call; wide, or split across
+          zero, means a clinician genuinely cannot say which way evolution will go.</p>
 
         <!-- interactive (revealed by JS) -->
         <div class="crs-dwrap" hidden>
@@ -158,6 +174,48 @@ const readUnc = densityStats(exUnc).reading;
             <p class="crs-dread">{readUnc}</p>
           </figure>
         </div>
+      </div>
+
+      <!-- ───────── PANEL 4 · Layer 4 context landscape ───────── -->
+      <div role="tabpanel" id="crs-panel-4" aria-labelledby="crs-tab-4" class="crs-panel" data-crs-context>
+        <h3 class="crs-panel-h">CRS across contexts</h3>
+        <p class="crs-howto mono">The CRS might differ between laboratory and within-host conditions. Drag the
+          marker — or focus it and press <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> — to observe how <strong>{ex.drug}</strong> 
+          CRS might change as the environment shifts from lab growth media to an inflamed, host-like airway.</p>
+
+        <div class="crs-fgrid">
+          <div class="crs-field-wrap">
+            <svg id="crs-field" class="crs-field" viewBox="0 0 380 360" role="group"
+              aria-label="Context field: environment on the horizontal axis, inflammation on the vertical axis; colour and contours show the local Collateral Response Score" set:html={field0}></svg>
+            <div class="crs-flegend" aria-hidden="true">
+              <span class="crs-fleg-cap mono">CRS</span>
+              <span class="crs-fleg-bar"></span>
+              <span class="crs-fleg-ends mono"><span>{cLab} · confident</span><span>0 · uncertain</span></span>
+            </div>
+          </div>
+
+          <div class="crs-fside">
+            <!-- interactive readout (revealed by JS) -->
+            <div class="crs-fwrap" hidden>
+              <p class="crs-cap mono">Local CRS at the marker</p>
+              <p class="crs-fval" id="crs-fval">{cLab}</p>
+              <svg id="crs-fdens" class="crs-density" viewBox="0 0 380 184" role="img"
+                aria-label="Distribution of the local Collateral Response Score at the marker" set:html={fdens0}></svg>
+              <p class="crs-dread" id="crs-fread">{fread0}</p>
+              <p class="visually-hidden" aria-live="polite" id="crs-flive"></p>
+            </div>
+
+            <!-- no-JS fallback: the two labelled sample points -->
+            <div class="crs-ffallback">
+              <p class="crs-fsample"><span class="crs-fkey mono">Lab media · low inflammation</span> → CRS <b>{cLab}</b> — a confident, actionable call.</p>
+              <p class="crs-fsample"><span class="crs-fkey mono">Airway-on-chip · high inflammation</span> → CRS <b>{cHost}</b> — predictability collapses.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="crs-pcap">One would confidently conclude that a population is collaterally sensitive to {ex.drug} in lab
+          media (CRS {cLab}). However, as the environment becomes more host-like and inflamed, that confidence drifts toward zero. Using the <strong>Evolution-on-a-Chip</strong> platform,
+          in which host-like microenvironments are monitored via real-time sensors, we will investigate whether and how environmental context reshapes CRS.</p>
       </div>
     </div>
   </div>
@@ -291,10 +349,52 @@ const readUnc = densityStats(exUnc).reading;
   .crs-dfallback[hidden] { display: none; }
   .crs-dex { margin: 0; }
 
+  /* ---- Layer 4 (context landscape) ---- */
+  .crs-fgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+    gap: clamp(18px, 3vw, 36px); align-items: start; }
+  .crs-field-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+  .crs-field { width: 100%; max-width: 460px; height: auto; touch-action: none; display: block; }
+  .crs-field :global(.crs-fband) { shape-rendering: geometricPrecision; }
+  .crs-field :global(.crs-fcontour) { stroke: color-mix(in srgb, var(--ink) 40%, transparent); stroke-width: 1.1; fill: none; }
+  .crs-field :global(.crs-fcontour.zero) { stroke: var(--ink); stroke-width: 1.8; stroke-dasharray: 5 4; }
+  .crs-field :global(.crs-fframe) { fill: none; stroke: var(--ink); stroke-width: 1.3; }
+  .crs-field :global(.crs-faxis) { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .03em; fill: var(--slate); }
+  .crs-field :global(.crs-fmark) { cursor: grab; }
+  .crs-field :global(.crs-fmark.is-draggable:focus-visible) { outline: none; }
+  .crs-field :global(.crs-fmark.is-draggable:focus-visible .crs-fmark-halo) { stroke: var(--focus); stroke-width: 3; opacity: 1; }
+  .crs-field :global(.crs-fmark-halo) { fill: none; stroke: var(--paper-panel); stroke-width: 3; opacity: .92; }
+  .crs-field :global(.crs-fmark-dot) { stroke: var(--ink); stroke-width: 2; }
+  .crs-field :global(.crs-fmark-val) { font-family: var(--font-display); font-size: 16px; font-weight: 500; fill: var(--ink);
+    paint-order: stroke; stroke: var(--paper-panel); stroke-width: 3.5px; stroke-linejoin: round; }
+
+  .crs-flegend { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "cap bar" "cap ends";
+    align-items: center; gap: 2px 10px; width: 100%; max-width: 460px; }
+  .crs-fleg-cap { grid-area: cap; color: var(--slate); }
+  .crs-fleg-bar { grid-area: bar; height: 9px; border-radius: 5px; border: 1px solid var(--rule);
+    background: linear-gradient(90deg, rgb(40, 74, 84), rgb(214, 204, 182)); }
+  .crs-fleg-ends { grid-area: ends; display: flex; justify-content: space-between; color: var(--slate); font-size: .68rem; }
+
+  .crs-fside { align-self: center; }
+  .crs-fwrap { text-align: center; }
+  .crs-fwrap[hidden], .crs-ffallback[hidden] { display: none; }
+  .crs-fval { font-family: var(--font-display); font-size: clamp(2rem, 1.4rem + 2vw, 2.8rem); font-weight: 500;
+    color: var(--ink); line-height: 1; margin: 4px 0 var(--s-3); }
+  .crs-fwrap .crs-density { max-width: 320px; }
+  .crs-fwrap .crs-dread { font-size: .98rem; margin-top: var(--s-2); }
+  .crs-ffallback { display: flex; flex-direction: column; gap: var(--s-3); }
+  .crs-fsample { color: var(--ink-soft); font-size: .98rem; line-height: 1.5; }
+  .crs-fsample b { color: var(--ink); font-family: var(--font-mono); }
+  .crs-fkey { display: block; color: var(--teal); font-size: .74rem; letter-spacing: .04em; margin-bottom: 2px; }
+
   @media (max-width: 760px) {
     .crs-grid { grid-template-columns: 1fr; grid-template-areas: "plot" "out" "ctrl"; gap: var(--s-4); }
     .crs-side { align-self: stretch; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: var(--s-3); }
     .crs-plot { max-width: 340px; }
+    .crs-fgrid { grid-template-columns: 1fr; }
+    .crs-fside { align-self: stretch; }
+    /* four tabs no longer fit one row at ~390px — wrap instead of overflowing */
+    .crs-tabs { flex-wrap: wrap; gap: 0 2px; }
+    .crs-tab { flex: 1 0 auto; justify-content: center; padding: 10px 12px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .crs-ready .crs-plot :global(.crs-dot),
@@ -309,6 +409,7 @@ const readUnc = densityStats(exUnc).reading;
     renderPlot, renderTrack, readout, tallyRows, renderProfileRows, profileSummary,
     renderDensity, densityStats, genComponents,
     valueToY, yToValue, valueText, clamp, snap, crsToTrackX, crsMiniX, fmtCRS, PLOT,
+    renderFieldMarker, localCrs, fieldColor, clamp01, fieldX, fieldY, xToEnv, yToInflam, FIELD,
   } from "../scripts/crs-core";
 
   // ── accessible tabs ──────────────────────────────────────────────
@@ -505,11 +606,81 @@ const readUnc = densityStats(exUnc).reading;
     }
   }
 
+  // ── Layer 4 context landscape ────────────────────────────────────
+  class ContextField {
+    ex = CRS.context.example; env = 0; inflam = 0;
+    field: SVGSVGElement; markers: SVGGElement; mark!: SVGGElement;
+    dens: SVGSVGElement; valEl: HTMLElement; readEl: HTMLElement; live: HTMLElement;
+    constructor(panel: HTMLElement) {
+      panel.querySelector<HTMLElement>(".crs-ffallback")!.hidden = true;
+      panel.querySelector<HTMLElement>(".crs-fwrap")!.hidden = false;
+      panel.classList.add("crs-ready");
+      this.field = panel.querySelector("#crs-field")!;
+      this.markers = this.field.querySelector(".crs-fmarkers")!;
+      this.dens = panel.querySelector("#crs-fdens")!;
+      this.valEl = panel.querySelector("#crs-fval")!;
+      this.readEl = panel.querySelector("#crs-fread")!;
+      this.live = panel.querySelector("#crs-flive")!;
+      // swap the two static sample markers for one draggable marker
+      this.markers.innerHTML = renderFieldMarker(this.env, this.inflam, this.ex, true);
+      this.mark = this.markers.querySelector(".crs-fmark")!;
+      this.field.addEventListener("pointerdown", (e) => this.startDrag(e));
+      this.mark.addEventListener("keydown", (e) => this.onKey(e));
+      this.update(false);
+    }
+    posFrom(clientX: number, clientY: number) {
+      const r = this.field.getBoundingClientRect();
+      this.env = clamp01(xToEnv(((clientX - r.left) / r.width) * FIELD.w));
+      this.inflam = clamp01(yToInflam(((clientY - r.top) / r.height) * FIELD.h));
+    }
+    startDrag(e: PointerEvent) {
+      e.preventDefault(); this.posFrom(e.clientX, e.clientY); this.update(false);
+      this.mark.focus(); this.field.setPointerCapture?.(e.pointerId);
+      const move = (ev: PointerEvent) => { this.posFrom(ev.clientX, ev.clientY); this.update(false); };
+      const up = () => {
+        this.field.releasePointerCapture?.(e.pointerId);
+        this.field.removeEventListener("pointermove", move);
+        this.field.removeEventListener("pointerup", up);
+        this.update(true);
+      };
+      this.field.addEventListener("pointermove", move);
+      this.field.addEventListener("pointerup", up);
+    }
+    onKey(e: KeyboardEvent) {
+      const step = 0.05;
+      if (e.key === "ArrowRight") this.env = clamp01(this.env + step);
+      else if (e.key === "ArrowLeft") this.env = clamp01(this.env - step);
+      else if (e.key === "ArrowUp") this.inflam = clamp01(this.inflam + step);
+      else if (e.key === "ArrowDown") this.inflam = clamp01(this.inflam - step);
+      else if (e.key === "Home") { this.env = 0; this.inflam = 0; }
+      else if (e.key === "End") { this.env = 1; this.inflam = 1; }
+      else return;
+      e.preventDefault(); this.update(true);
+    }
+    label(c: number, confidence: string) {
+      const [ax, ay] = CRS.context.axes;
+      return `${ax.label} ${Math.round(this.env * 100)}% toward ${ax.to}, ${ay.label} ${Math.round(this.inflam * 100)}%. Local CRS ${fmtCRS(c)} — ${confidence}.`;
+    }
+    update(announce: boolean) {
+      const c = localCrs(this.env, this.inflam, this.ex);
+      this.mark.setAttribute("transform", `translate(${fieldX(this.env).toFixed(1)} ${fieldY(this.inflam).toFixed(1)})`);
+      const dot = this.mark.querySelector(".crs-fmark-dot"); if (dot) dot.setAttribute("fill", fieldColor(c, this.ex.baseCrs));
+      const v = this.mark.querySelector(".crs-fmark-val"); if (v) v.textContent = fmtCRS(c);
+      const comps = genComponents(c), s = densityStats(comps);
+      this.dens.innerHTML = renderDensity(comps, c);
+      this.valEl.textContent = fmtCRS(c);
+      this.readEl.textContent = s.reading;
+      this.mark.setAttribute("aria-label", `Context marker. ${this.label(c, s.confidence)} Arrow keys move it.`);
+      if (announce) this.live.textContent = `${this.label(c, s.confidence)} ${s.reading}`;
+    }
+  }
+
   const card = document.querySelector<HTMLElement>(".crs-card");
   if (card) {
     new Tabs(card);
     const l1 = card.querySelector<HTMLElement>("[data-crs-root]"); if (l1) new CrsCalc(l1);
     const l2 = card.querySelector<HTMLElement>("[data-crs-pathways]"); if (l2) new PathwayProfile(l2);
     const l3 = card.querySelector<HTMLElement>("[data-crs-dist]"); if (l3) new DistributionView(l3);
+    const l4 = card.querySelector<HTMLElement>("[data-crs-context]"); if (l4) new ContextField(l4);
   }
 </script>

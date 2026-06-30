@@ -29,21 +29,21 @@ members:
     role: "Undergraduate"
     org: "CWRU"
     photo: "amira_stocks.jpeg"
-    bio: "Amira is investigating the impact of biofilm formation on the evolutionary trajectories of antibiotic resistance and how these pathways differ across varying backgrounds."
+    bio: "Amira is investigating the impact of biofilm formation on the evolutionary trajectories of antibiotic resistance and how these pathways differ across varying backgrounds and drug concentrations."
 
   - order: 5
-    name: "Rohan Desai"
-    role: "Undergraduate"
-    org: "Vanderbilt"
-    photo: "rohan_desai.jpeg"
-    bio: "Rohan is working remotely with our group to write the analysis pipeline for several projects."
-
-  - order: 6
     name: "Brandon Kakuda"
     role: "Undergraduate"
     org: "CWRU"
     photo: "brandon_kakuda.png"
     bio: "Brandon is asking how selection strength and background impact the evolution of antibiotic resistance and subsequent drug tradeoffs."
+
+  - order: 6
+    name: "Rohan Desai"
+    role: "Undergraduate"
+    org: "Vanderbilt"
+    photo: "rohan_desai.jpeg"
+    bio: "Rohan is working remotely with our group to write the analysis pipeline for several projects."
 
   - order: 7
     name: "Drew Sager"

@@ -17,6 +17,17 @@ const shots = [
   { out: "crs-l3-uncertain.png", path: "/", w: 1440, h: 980, scrollTo: ".crs", settle: 900, clicks: ['#crs-tab-3', '[data-drug="3"]'] },
   { out: "crs-l3-mobile.png", path: "/", w: 390, h: 960, dsf: 2, mobile: true, scrollTo: ".crs", settle: 900, clicks: ['#crs-tab-3'] },
   { out: "crs-l3-reduced.png", path: "/", w: 1440, h: 1300, scrollTo: ".crs", reduce: true, settle: 900 },
+  // Layer 4 — context landscape (marker is keyboard-driven; move it via dispatched keys)
+  { out: "crs-l4-lab.png", path: "/", w: 1440, h: 1040, scrollTo: ".crs", settle: 900, clicks: ['#crs-tab-4'] },
+  { out: "crs-l4-mid.png", path: "/", w: 1440, h: 1040, scrollTo: ".crs", settle: 900, clicks: ['#crs-tab-4'],
+    eval: "(()=>{const m=document.querySelector('#crs-field .crs-fmark');m.focus();for(let i=0;i<11;i++){m.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));m.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));}return'ok'})()" },
+  { out: "crs-l4-host.png", path: "/", w: 1440, h: 1040, scrollTo: ".crs", settle: 900, clicks: ['#crs-tab-4'],
+    eval: "(()=>{const m=document.querySelector('#crs-field .crs-fmark');m.focus();m.dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true}));return'ok'})()" },
+  { out: "crs-l4-mobile.png", path: "/", w: 390, h: 1180, dsf: 2, mobile: true, scrollTo: ".crs", settle: 700, clicks: ['#crs-tab-4'],
+    eval: "document.querySelector('#crs-field').scrollIntoView({block:'center'})", afterEval: 500 },
+  // no-JS collapses the canvas-driven climb section, shifting layout; re-scroll after settle
+  { out: "crs-l4-nojs.png", path: "/", w: 1440, h: 1180, scrollTo: "#crs-panel-4", settle: 900, nojs: true,
+    eval: "document.querySelector('#crs-panel-4').scrollIntoView({block:'center'})", afterEval: 600 },
 ];
 
 class CDP {
@@ -45,6 +56,9 @@ async function main() {
     const cdp = new CDP(ws);
     let loaded = false; cdp.on("Page.loadEventFired", () => (loaded = true));
     await cdp.send("Page.enable");
+    await cdp.send("Network.enable");
+    await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+    await cdp.send("Emulation.setScriptExecutionDisabled", { value: !!s.nojs });
     await cdp.send("Emulation.setDeviceMetricsOverride", { width: s.w, height: s.h, deviceScaleFactor: s.dsf || 1, mobile: !!s.mobile });
     await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: s.reduce ? "reduce" : "no-preference" }] });
     await cdp.send("Page.navigate", { url: BASE + s.path });
@@ -64,6 +78,7 @@ async function main() {
       await sleep(450);
     }
     if (clicks.length) await sleep(s.afterClick || 500);
+    if (s.eval) { await cdp.send("Runtime.evaluate", { expression: s.eval }); await sleep(s.afterEval || 500); }
     const { result } = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
     writeFileSync(`${OUT}/${s.out}`, Buffer.from(result.data, "base64"));
     console.log("shot:", s.out);
