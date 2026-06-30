@@ -10,11 +10,13 @@ mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const shots = [
-  { out: "r3-contact.png", path: "/contact/", w: 1440, h: 1000, settle: 800 },
-  { out: "r3-contact-foot.png", path: "/contact/", w: 1440, h: 760, scrollTo: ".foot", settle: 700 },
-  { out: "r3-cv-foot.png", path: "/cv/", w: 1440, h: 700, scrollTo: ".foot", settle: 700 },
-  { out: "r3-home-foot.png", path: "/", w: 1440, h: 900, scrollTo: ".foot", settle: 1200 },
-  { out: "r3-contact-mobile.png", path: "/contact/", w: 390, h: 844, dsf: 2, mobile: true, settle: 700 },
+  { out: "crs-l1-desktop.png", path: "/", w: 1440, h: 1000, scrollTo: ".crs", settle: 1200 },
+  { out: "crs-l1-mobile.png", path: "/", w: 390, h: 920, dsf: 2, mobile: true, scrollTo: ".crs", settle: 1200 },
+  { out: "crs-l1-reduced.png", path: "/", w: 1440, h: 1000, scrollTo: ".crs", reduce: true, settle: 1000 },
+  { out: "crs-l1-agreement.png", path: "/", w: 1440, h: 1000, scrollTo: ".crs", settle: 900,
+    click: '[data-preset="agree"]', afterClick: 700 },
+  { out: "crs-l1-split.png", path: "/", w: 1440, h: 1000, scrollTo: ".crs", settle: 900,
+    click: '[data-preset="split"]', afterClick: 700 },
 ];
 
 class CDP {
@@ -55,6 +57,11 @@ async function main() {
         `el.scrollIntoView({block:'center'});return scrollY})()` });
       await sleep(s.settle || 1200);
     } else { await sleep(s.settle || 600); }
+    if (s.click) {
+      await cdp.send("Runtime.evaluate", { expression:
+        `(()=>{const el=document.querySelector(${JSON.stringify(s.click)});if(el)el.click();return!!el})()` });
+      await sleep(s.afterClick || 600);
+    }
     const { result } = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
     writeFileSync(`${OUT}/${s.out}`, Buffer.from(result.data, "base64"));
     console.log("shot:", s.out);

@@ -1,0 +1,259 @@
+---
+import { CRS } from "../data/crs";
+import { renderPlot, renderTrack, readout, computeCRS } from "../scripts/crs-core";
+
+// server render = the no-JS / pre-hydration fallback (the worked example, labelled)
+const reps0 = CRS.layer1.replicates;
+const plot0 = renderPlot(reps0, CRS.axis, CRS.layer1.drug);
+const track0 = renderTrack(computeCRS(reps0, CRS.axis));
+const read0 = readout(reps0, CRS.axis).text;
+---
+<section class="crs" aria-labelledby="crs-h">
+  <div class="wrap">
+    <p class="card-lab mono reveal">The Card Lab · interactive</p>
+    <h2 class="title crs-title reveal" id="crs-h">Will the next drug still <span class="peak">work?</span></h2>
+    <p class="crs-intro measure reveal">
+      When a pathogen evolves resistance to one drug, its susceptibility to others can shift with it. The
+      <strong>Collateral Response Score</strong> reads a panel of evolved replicates and captures two things at once:
+      the <em>direction</em> of that shift — its sign — and how <em>predictable</em> the direction is — its magnitude.
+      Drag the replicates and watch the score resolve.
+    </p>
+
+    <div class="crs-card reveal" data-crs-root>
+      <p class="crs-howto mono" id="crs-howto">
+        Drag the dots — or focus one and press <kbd>↑</kbd> <kbd>↓</kbd> — to set each replicate's response.
+      </p>
+
+      <div class="crs-grid">
+        <div class="crs-plot-wrap">
+          <svg id="crs-plot" class="crs-plot" viewBox="0 0 380 360" aria-describedby="crs-howto"
+            role="group" aria-label="Single-drug replicate plot; drag dots up for collateral resistance, down for sensitivity" set:html={plot0}></svg>
+        </div>
+
+        <!-- track + readout sit directly under the plot so they stay visible while dragging -->
+        <div class="crs-output">
+          <svg id="crs-track" class="crs-track" viewBox="0 0 380 88" role="img"
+            aria-label="Collateral Response Score, from minus one to plus one" set:html={track0}></svg>
+          <p id="crs-readout" class="crs-readout" set:html={read0}></p>
+        </div>
+
+        <div class="crs-side">
+          <div class="crs-count">
+            <span class="crs-cap mono">Replicates</span>
+            <div class="crs-stepper">
+              <button type="button" class="crs-btn" data-crs="dec" aria-label="Remove a replicate">−</button>
+              <span id="crs-count" class="crs-num">{reps0.length}</span>
+              <button type="button" class="crs-btn" data-crs="inc" aria-label="Add a replicate">+</button>
+            </div>
+          </div>
+
+          <div class="crs-presets">
+            <span class="crs-cap mono">Try a preset</span>
+            <div class="crs-chips">
+              {CRS.layer1.presets.map((p) => (
+                <button type="button" class="crs-chip" data-preset={p.id} title={p.note}>{p.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <p id="crs-live" class="visually-hidden" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .crs { position: relative; z-index: var(--z-content); padding: var(--s-6) 0 var(--s-7);
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 100%); }
+  .crs-title { font-size: var(--t-h2); margin-bottom: var(--s-3); }
+  .crs-title .peak { color: var(--amber); }
+  .crs-intro { color: var(--ink-soft); font-size: var(--t-lede); margin-bottom: var(--s-5); }
+  .crs-intro strong { color: var(--ink); font-weight: 600; }
+  .crs-intro em { font-style: italic; color: var(--teal); }
+
+  .crs-card { background: var(--paper-panel); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: clamp(20px, 3vw, 36px); box-shadow: 0 24px 60px -44px rgba(34, 45, 42, .5); }
+  .crs-howto { color: var(--slate); margin-bottom: var(--s-4); text-transform: none; letter-spacing: .02em; }
+  .crs-howto kbd { font-family: var(--font-mono); background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 0 5px; font-size: .85em; }
+
+  .crs-grid { display: grid; grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-areas: "plot ctrl" "out ctrl"; gap: clamp(14px, 3vw, 36px) clamp(20px, 4vw, 48px);
+    align-items: start; }
+  .crs-plot-wrap { grid-area: plot; display: flex; justify-content: center; }
+  .crs-output { grid-area: out; }
+  .crs-plot { width: 100%; max-width: 420px; height: auto; touch-action: none; }
+
+  /* plot internals (rendered by crs-core) */
+  .crs-plot :global(.crs-zone-res) { fill: color-mix(in srgb, var(--amber-bright) 9%, var(--paper-panel)); }
+  .crs-plot :global(.crs-zone-sen) { fill: color-mix(in srgb, var(--slate) 9%, var(--paper-panel)); }
+  .crs-plot :global(.crs-axis) { stroke: var(--ink); stroke-width: 1.4; }
+  .crs-plot :global(.crs-zero) { stroke: var(--slate); stroke-width: 1.2; stroke-dasharray: 4 4; }
+  .crs-plot :global(.crs-axlab) { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-soft); }
+  .crs-plot :global(.crs-axtitle) { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; fill: var(--slate); }
+  .crs-plot :global(.crs-zonelab) { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; }
+  .crs-plot :global(.crs-zonelab.res) { fill: var(--amber-deep); }
+  .crs-plot :global(.crs-zonelab.sen) { fill: var(--slate); }
+  .crs-plot :global(.crs-dot) { stroke: var(--paper-panel); stroke-width: 2.5; cursor: grab; }
+  .crs-plot :global(.crs-dot.pos) { fill: var(--amber); }
+  .crs-plot :global(.crs-dot.neg) { fill: var(--teal); }
+  .crs-plot :global(.crs-dot.zero) { fill: var(--ink-faint); }
+  .crs-plot :global(.crs-dot.sel) { stroke: var(--teal-deep); stroke-width: 3; }
+  .crs-plot :global(.crs-dot:focus-visible) { outline: 2.5px solid var(--focus); outline-offset: 2px; }
+  .crs-ready .crs-plot :global(.crs-dot) { transition: cy .12s ease, fill .12s ease; }
+
+  /* side controls */
+  .crs-side { grid-area: ctrl; align-self: center; display: flex; flex-direction: column; gap: var(--s-4); }
+  .crs-cap { color: var(--slate); display: block; margin-bottom: 10px; }
+  .crs-stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .crs-btn { width: 44px; height: 44px; border: 1px solid var(--rule); background: var(--paper);
+    border-radius: var(--radius); font-size: 1.3rem; color: var(--ink); cursor: pointer; line-height: 1;
+    transition: border-color .2s, background .2s; }
+  .crs-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .crs-num { font-family: var(--font-mono); font-size: 1.2rem; min-width: 2ch; text-align: center; }
+  .crs-chips { display: flex; flex-direction: column; gap: 8px; }
+  .crs-chip { text-align: left; padding: 9px 12px; border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--paper); color: var(--ink); font-size: .86rem; cursor: pointer;
+    transition: border-color .2s, background .2s; }
+  .crs-chip:hover { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, var(--paper)); }
+
+  /* CRS track */
+  .crs-track { width: 100%; max-width: 460px; height: auto; margin: 0 auto; display: block; }
+  .crs-track :global(.crs-track-bar) { opacity: .8; }
+  .crs-track :global(.crs-ttick) { stroke: var(--ink-soft); stroke-width: 1.2; }
+  .crs-track :global(.crs-tlab) { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em;
+    text-transform: uppercase; fill: var(--slate); }
+  .crs-track :global(.crs-marker-tri) { fill: var(--ink); }
+  .crs-track :global(.crs-marker-val) { font-family: var(--font-display); font-size: 20px; fill: var(--ink); font-weight: 500; }
+  .crs-ready .crs-track :global(.crs-marker) { transition: transform .25s cubic-bezier(.22,.61,.36,1); }
+
+  .crs-readout { text-align: center; max-width: 44rem; margin: var(--s-3) auto 0; color: var(--ink);
+    font-size: 1.05rem; }
+
+  @media (max-width: 760px) {
+    .crs-grid { grid-template-columns: 1fr; grid-template-areas: "plot" "out" "ctrl"; gap: var(--s-4); }
+    .crs-side { align-self: stretch; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: var(--s-3); }
+    .crs-plot { max-width: 340px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .crs-ready .crs-plot :global(.crs-dot),
+    .crs-ready .crs-track :global(.crs-marker) { transition: none; }
+  }
+</style>
+
+<script>
+  import { CRS } from "../data/crs";
+  import {
+    renderPlot, renderTrack, readout, valueToY, yToValue, valueText,
+    clamp, snap, crsToTrackX, fmtCRS, PLOT,
+  } from "../scripts/crs-core";
+
+  class CrsCalc {
+    root: HTMLElement; a = CRS.axis; drug = CRS.layer1.drug;
+    reps: number[] = [...CRS.layer1.replicates]; sel = -1;
+    plot: SVGSVGElement; track: SVGSVGElement;
+    readoutEl: HTMLElement; liveEl: HTMLElement; countEl: HTMLElement;
+    marker: SVGGElement | null = null; markerVal: SVGTextElement | null = null;
+
+    constructor(root: HTMLElement) {
+      this.root = root;
+      this.plot = root.querySelector("#crs-plot")!;
+      this.track = root.querySelector("#crs-track")!;
+      this.readoutEl = root.querySelector("#crs-readout")!;
+      this.liveEl = root.querySelector("#crs-live")!;
+      this.countEl = root.querySelector("#crs-count")!;
+      root.classList.add("crs-ready");
+      root.querySelector('[data-crs="inc"]')!.addEventListener("click", () => this.setCount(this.reps.length + 1));
+      root.querySelector('[data-crs="dec"]')!.addEventListener("click", () => this.setCount(this.reps.length - 1));
+      root.querySelectorAll<HTMLElement>("[data-preset]").forEach((b) =>
+        b.addEventListener("click", () => this.applyPreset(b.dataset.preset!)));
+      this.render();
+    }
+
+    render() {
+      this.plot.innerHTML = renderPlot(this.reps, this.a, this.drug, this.sel);
+      this.track.innerHTML = renderTrack(readout(this.reps, this.a).crs);
+      this.marker = this.track.querySelector(".crs-marker");
+      this.markerVal = this.track.querySelector(".crs-marker-val");
+      this.readoutEl.textContent = readout(this.reps, this.a).text;
+      this.bindDots();
+    }
+
+    bindDots() {
+      this.plot.querySelectorAll<SVGCircleElement>(".crs-dot").forEach((dot) => {
+        const i = Number(dot.dataset.i);
+        dot.addEventListener("pointerdown", (e) => this.startDrag(e, dot, i));
+        dot.addEventListener("keydown", (e) => this.onKey(e, dot, i));
+        dot.addEventListener("focus", () => { this.sel = i; });
+      });
+    }
+
+    valueAt(clientY: number) {
+      const r = this.plot.getBoundingClientRect();
+      return clamp(snap(yToValue(((clientY - r.top) / r.height) * PLOT.h, this.a), this.a), this.a);
+    }
+
+    startDrag(e: PointerEvent, dot: SVGCircleElement, i: number) {
+      e.preventDefault(); dot.focus(); this.sel = i; dot.setPointerCapture?.(e.pointerId);
+      const move = (ev: PointerEvent) => { this.reps[i] = this.valueAt(ev.clientY); this.updateDot(dot, i); this.refresh(false); };
+      const up = () => {
+        dot.releasePointerCapture?.(e.pointerId);
+        dot.removeEventListener("pointermove", move); dot.removeEventListener("pointerup", up);
+        this.refresh(true);
+      };
+      dot.addEventListener("pointermove", move); dot.addEventListener("pointerup", up);
+    }
+
+    onKey(e: KeyboardEvent, dot: SVGCircleElement, i: number) {
+      let v = this.reps[i];
+      if (e.key === "ArrowUp" || e.key === "ArrowRight") v += this.a.step;
+      else if (e.key === "ArrowDown" || e.key === "ArrowLeft") v -= this.a.step;
+      else if (e.key === "Home") v = this.a.max;
+      else if (e.key === "End") v = this.a.min;
+      else return;
+      e.preventDefault();
+      this.reps[i] = clamp(snap(v, this.a), this.a);
+      this.updateDot(dot, i); this.refresh(true);
+    }
+
+    updateDot(dot: SVGCircleElement, i: number) {
+      const v = this.reps[i], eps = this.a.step / 2;
+      dot.setAttribute("cy", valueToY(v, this.a).toFixed(1));
+      dot.setAttribute("class", `crs-dot ${v > eps ? "pos" : v < -eps ? "neg" : "zero"}${i === this.sel ? " sel" : ""}`);
+      dot.setAttribute("aria-valuenow", v.toFixed(2));
+      dot.setAttribute("aria-valuetext", valueText(v, this.a));
+    }
+
+    refresh(announce: boolean) {
+      const { crs, text } = readout(this.reps, this.a);
+      if (this.marker) this.marker.setAttribute("transform", `translate(${crsToTrackX(crs).toFixed(1)} 0)`);
+      if (this.markerVal) this.markerVal.textContent = fmtCRS(crs);
+      this.readoutEl.textContent = text;
+      if (announce) this.liveEl.textContent = text;
+    }
+
+    setCount(n: number) {
+      n = Math.max(CRS.layer1.minReplicates, Math.min(CRS.layer1.maxReplicates, n));
+      if (n === this.reps.length) return;
+      while (this.reps.length < n) this.reps.push(0);
+      this.reps.length = n;
+      this.countEl.textContent = String(n);
+      this.sel = -1; this.render();
+      this.liveEl.textContent = `${n} replicates. ${readout(this.reps, this.a).text}`;
+    }
+
+    applyPreset(id: string) {
+      const p = CRS.layer1.presets.find((x) => x.id === id);
+      if (!p) return;
+      this.reps = [...p.replicates];
+      this.countEl.textContent = String(this.reps.length);
+      this.sel = -1; this.render();
+      this.liveEl.textContent = `${p.label}. ${readout(this.reps, this.a).text}`;
+    }
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-crs-root]");
+  if (root) new CrsCalc(root);
+</script>

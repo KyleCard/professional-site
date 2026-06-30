@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Team from "../components/Team.astro";
 import Chip from "../components/Chip.astro";
+import CrsExplorer from "../components/CrsExplorer.astro";
 import { Image } from "astro:assets";
 import { SITE, LINKS } from "../data/site";
 import portrait from "../../assets/kyle-card-1-900x900px.png";
@@ -157,6 +158,9 @@ import ls04 from "../../assets/research/landscape-04-day.png";
       <div class="reveal"><Chip /></div>
     </div>
   </section>
+
+  <!-- ════════════════ CRS EXPLORER — interactive ════════════════ -->
+  <CrsExplorer />
 
   <!-- ════════════════ THE TEAM ════════════════ -->
   <section class="team-sec wrap" aria-labelledby="team-h">
