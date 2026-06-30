@@ -58,7 +58,7 @@ export const CRS: CrsConfig = {
     presets: [
       { id: "worked", label: "Worked example", note: "3 resist, 1 sensitive — CRS +0.50",
         replicates: [1, 1, 1, -1] },
-      { id: "agree", label: "Same score, full agreement", note: "all replicates agree — still CRS +0.50",
+      { id: "agree", label: "Full agreement", note: "all replicates agree — still CRS +0.50",
         replicates: [0.5, 0.5, 0.5, 0.5] },
       { id: "split", label: "Even split", note: "replicates diverge — CRS ≈ 0, unpredictable",
         replicates: [1, 1, -1, -1] },
@@ -73,11 +73,14 @@ export const CRS: CrsConfig = {
     { id: "p2", label: "Pathway 2", crs: [0.61, -0.70, 0.38, -0.30, 0.69, -0.52] },
   ],
 
+  // Optional hand-tuned distributions (else generated from the drug's CRS).
+  // Means are kept consistent with the pathway CRS above so the point estimate
+  // sits on the density. Drug A = narrow/confident; Drug D = bimodal/uncertain.
   distributions: {
-    "p1:Drug A": { components: [{ weight: 1, mean: -0.72, sd: 0.08 }] },                       // narrow, confident
-    "p1:Drug D": { components: [{ weight: 0.5, mean: -0.35, sd: 0.18 }, { weight: 0.5, mean: 0.30, sd: 0.18 }] }, // bimodal across 0
-    "p2:Drug A": { components: [{ weight: 1, mean: 0.61, sd: 0.10 }] },
-    "p2:Drug D": { components: [{ weight: 0.6, mean: -0.20, sd: 0.22 }, { weight: 0.4, mean: 0.25, sd: 0.20 }] },
+    "p1:Drug A": { components: [{ weight: 1, mean: -0.72, sd: 0.08 }] },
+    "p1:Drug D": { components: [{ weight: 0.68, mean: 0.5, sd: 0.16 }, { weight: 0.32, mean: -0.5, sd: 0.16 }] }, // mean ≈ +0.18, straddles 0
+    "p2:Drug A": { components: [{ weight: 1, mean: 0.61, sd: 0.09 }] },
+    "p2:Drug D": { components: [{ weight: 0.2, mean: 0.5, sd: 0.16 }, { weight: 0.8, mean: -0.5, sd: 0.16 }] }, // mean ≈ −0.30, straddles 0
   },
 
   context: {

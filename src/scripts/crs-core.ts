@@ -49,29 +49,146 @@ export function valueText(v: number, a: Axis): string {
   return `${fmtCRS(v)}, ${dirWord(v, a.step / 2)}`;
 }
 
-// ---- plain-language readout (announced via aria-live) ---------------------
-export function readout(reps: number[], a: Axis): { crs: number; text: string } {
+// ---- replicate tally + plain-language interpretation ----------------------
+//  Counts each replicate as cross-resistant (R>0), collaterally sensitive
+//  (R<0), or unchanged (R≈0), so the readout can never confuse "all at
+//  baseline (no change)" with "replicates diverge (genuine uncertainty)".
+export interface Readout {
+  crs: number; res: number; sen: number; base: number; total: number;
+  interp: string; live: string;
+}
+
+export function readout(reps: number[], a: Axis): Readout {
   const crs = computeCRS(reps, a);
   const eps = a.step / 2;
   const total = reps.length;
   const res = reps.filter((v) => v > eps).length;
   const sen = reps.filter((v) => v < -eps).length;
+  const base = total - res - sen;
   const mag = Math.abs(crs);
+  const dir = crs > 0 ? "resistance" : "sensitivity";
 
-  let phrase: string;
-  if (mag <= 0.2) phrase = "replicates diverge — outcome highly uncertain (CRS ≈ 0)";
-  else if (mag >= 0.5) phrase = `leaning predictable ${dirWord(crs, eps)}`;
-  else phrase = `a ${dirWord(crs, eps)} trend, but replicates disagree`;
+  let interp: string;
+  if (base === total) interp = "No collateral change — every replicate stayed at baseline.";
+  else if (mag >= 0.5) interp = `Leaning predictable collateral ${dir}.`;
+  else if (res > 0 && sen > 0)
+    interp = mag <= 0.2
+      ? "Replicates diverge — outcome highly uncertain."
+      : `A collateral ${dir} trend, but replicates disagree.`;
+  else
+    interp = mag <= 0.2
+      ? `A faint collateral ${dir} signal — most replicates unchanged.`
+      : `A weak collateral ${dir} signal.`;
 
-  let count: string;
-  if (res > 0 && sen > 0) {
-    const maj = res >= sen ? "resistance" : "sensitivity";
-    count = `${Math.max(res, sen)} of ${total} replicates evolved cross-${maj}`;
-  } else if (res === total) count = `all ${total} replicates evolved cross-resistance`;
-  else if (sen === total) count = `all ${total} replicates evolved collateral sensitivity`;
-  else count = `${total} replicates near baseline`;
+  const live = `${res} of ${total} cross-resistant, ${sen} collaterally sensitive, ${base} unchanged. CRS ${fmtCRS(crs)}. ${interp}`;
+  return { crs, res, sen, base, total, interp, live };
+}
 
-  return { crs, text: `${count}; net CRS = ${fmtCRS(crs)} — ${phrase}.` };
+export function tallyRows(res: number, sen: number, base: number): string {
+  const row = (cls: string, label: string, n: number) =>
+    `<tr><th scope="row"><i class="crs-sw ${cls}" aria-hidden="true"></i>${label}</th><td class="crs-n">${n}</td></tr>`;
+  return row("res", "Cross-resistance", res) + row("sen", "Collateral sensitivity", sen) + row("base", "No change", base);
+}
+
+// ---- Layer 2: per-drug CRS profile (mini bars) ----------------------------
+export const MINIBAR = { w: 220, h: 26, x0: 8, x1: 212, y: 13 };
+export const crsMiniX = (crs: number) => MINIBAR.x0 + ((crs + 1) / 2) * (MINIBAR.x1 - MINIBAR.x0);
+const signClass = (c: number) => (c > 0.05 ? "pos" : c < -0.05 ? "neg" : "zero");
+
+export function renderProfileRows(drugs: string[], crsVals: number[]): string {
+  const zero = crsMiniX(0).toFixed(1);
+  return drugs
+    .map((d, i) => {
+      const c = crsVals[i] ?? 0;
+      const x = crsMiniX(c).toFixed(1);
+      return (
+        `<div class="crs-prow" data-i="${i}">` +
+        `<span class="crs-pdrug mono">${esc(d)}</span>` +
+        `<svg class="crs-pbar" viewBox="0 0 ${MINIBAR.w} ${MINIBAR.h}" aria-hidden="true">` +
+          `<rect x="${MINIBAR.x0}" y="${MINIBAR.y - 3}" width="${MINIBAR.x1 - MINIBAR.x0}" height="6" rx="3" class="crs-pbar-bg"/>` +
+          `<line x1="${zero}" y1="${MINIBAR.y - 8}" x2="${zero}" y2="${MINIBAR.y + 8}" class="crs-pzero"/>` +
+          `<g class="crs-mk-g" transform="translate(${x} 0)"><circle class="crs-mk ${signClass(c)}" cx="0" cy="${MINIBAR.y}" r="6"/></g>` +
+        `</svg>` +
+        `<span class="crs-pval mono">${fmtCRS(c)}</span>` +
+        `</div>`
+      );
+    })
+    .join("");
+}
+
+// one accessible line per drug (used in the no-JS fallback / SR summary)
+export function profileSummary(drugs: string[], crsVals: number[]): string {
+  return drugs.map((d, i) => `${esc(d)} CRS ${fmtCRS(crsVals[i] ?? 0)}`).join("; ") + ".";
+}
+
+// ---- Layer 3: CRS as a distribution ---------------------------------------
+export interface MixComp { weight: number; mean: number; sd: number; }
+const gauss = (x: number, m: number, sd: number) => Math.exp(-((x - m) ** 2) / (2 * sd * sd)) / (sd * Math.sqrt(2 * Math.PI));
+export const mixturePdf = (comps: MixComp[], x: number) => comps.reduce((s, c) => s + c.weight * gauss(x, c.mean, c.sd), 0);
+export const mixtureMean = (comps: MixComp[]) => {
+  const w = comps.reduce((s, c) => s + c.weight, 0) || 1;
+  return comps.reduce((s, c) => s + c.weight * c.mean, 0) / w;
+};
+
+// generate a plausible bootstrap distribution centred on a drug's CRS:
+// large |CRS| → narrow & confident; small |CRS| → bimodal, straddling zero.
+export function genComponents(c: number): MixComp[] {
+  if (Math.abs(c) >= 0.45) return [{ weight: 1, mean: c, sd: 0.09 }];
+  const wp = Math.min(0.95, Math.max(0.05, c + 0.5));
+  return [{ weight: wp, mean: 0.5, sd: 0.16 }, { weight: 1 - wp, mean: -0.5, sd: 0.16 }];
+}
+
+function erf(x: number) {
+  const t = 1 / (1 + 0.3275911 * Math.abs(x));
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return x >= 0 ? y : -y;
+}
+const ncdf = (z: number) => 0.5 * (1 + erf(z / Math.SQRT2));
+
+export function densityStats(comps: MixComp[]): { mean: number; pPos: number; straddle: number; reading: string } {
+  const w = comps.reduce((s, c) => s + c.weight, 0) || 1;
+  const pPos = comps.reduce((s, c) => s + c.weight * ncdf(c.mean / c.sd), 0) / w;
+  const straddle = Math.min(pPos, 1 - pPos);
+  const mean = mixtureMean(comps);
+  let reading: string;
+  if (straddle >= 0.3) reading = "Wide and straddling zero — genuinely uncertain. We can't call the direction.";
+  else if (Math.abs(mean) >= 0.45 && straddle < 0.12) reading = "Narrow and far from zero — a confident, actionable prediction.";
+  else reading = `Leaning collateral ${mean > 0 ? "resistance" : "sensitivity"}, but with real spread — read it cautiously.`;
+  return { mean, pPos, straddle, reading };
+}
+
+export const DENS = { w: 380, h: 184, top: 36, base: 146, x0: TRACK.x0, x1: TRACK.x1 };
+
+export function renderDensity(comps: MixComp[], point: number): string {
+  const N = 96, px = (crs: number) => crsToTrackX(crs);
+  const ys: number[] = [];
+  let maxp = 0;
+  for (let i = 0; i <= N; i++) { const p = mixturePdf(comps, -1 + (2 * i) / N); ys.push(p); if (p > maxp) maxp = p; }
+  maxp = maxp || 1;
+  const py = (p: number) => DENS.base - (p / maxp) * (DENS.base - DENS.top);
+  const xy = (i: number) => `${px(-1 + (2 * i) / N).toFixed(1)} ${py(ys[i]).toFixed(1)}`;
+  let line = `M ${xy(0)}`; for (let i = 1; i <= N; i++) line += ` L ${xy(i)}`;
+  const fill = `M ${px(-1).toFixed(1)} ${DENS.base} L ${xy(0)}` + (() => { let s = ""; for (let i = 1; i <= N; i++) s += ` L ${xy(i)}`; return s; })() + ` L ${px(1).toFixed(1)} ${DENS.base} Z`;
+  const tick = (c: number, label: string, anchor: string) => {
+    const tx = px(c).toFixed(1);
+    return `<line x1="${tx}" y1="${DENS.base}" x2="${tx}" y2="${DENS.base + 6}" class="crs-dtick"/>` +
+      `<text x="${tx}" y="${DENS.base + 20}" class="crs-dlab" text-anchor="${anchor}">${label}</text>`;
+  };
+  const mx = px(point).toFixed(1);
+  const gid = `cg${Math.random().toString(36).slice(2, 9)}`; // unique per render (no id collisions)
+  return (
+    `<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${px(-1).toFixed(1)}" y1="0" x2="${px(1).toFixed(1)}" y2="0">` +
+      `<stop offset="0" stop-color="var(--slate)"/><stop offset="0.5" stop-color="var(--rule)"/><stop offset="1" stop-color="var(--amber)"/></linearGradient></defs>` +
+    `<line x1="${px(0).toFixed(1)}" y1="${DENS.top - 8}" x2="${px(0).toFixed(1)}" y2="${DENS.base}" class="crs-dzero"/>` +
+    `<path class="crs-dfill" d="${fill}" fill="url(#${gid})"/>` +
+    `<path class="crs-dline" d="${line}" fill="none"/>` +
+    `<line x1="${px(-1).toFixed(1)}" y1="${DENS.base}" x2="${px(1).toFixed(1)}" y2="${DENS.base}" class="crs-daxis"/>` +
+    tick(-1, "−1 sensitivity", "start") + tick(0, "0", "middle") + tick(1, "+1 resistance", "end") +
+    `<g class="crs-dmark" transform="translate(${mx} 0)">` +
+      `<line x1="0" y1="${DENS.top - 8}" x2="0" y2="${DENS.base}" class="crs-dmark-l"/>` +
+      `<text x="0" y="${DENS.top - 14}" class="crs-dmark-t" text-anchor="middle">${fmtCRS(point)}</text>` +
+    `</g>`
+  );
 }
 
 // ---- SVG render (returns markup strings; same output server & client) ------
@@ -107,17 +224,17 @@ export function renderPlot(reps: number[], a: Axis, drug: string, sel = -1): str
 
 export function renderTrack(crs: number): string {
   const x = crsToTrackX(crs).toFixed(1);
-  const tick = (c: number, label: string) => {
+  const tick = (c: number, label: string, anchor: "start" | "middle" | "end") => {
     const tx = crsToTrackX(c).toFixed(1);
     return `<line x1="${tx}" y1="${TRACK.y - 7}" x2="${tx}" y2="${TRACK.y + 7}" class="crs-ttick"/>` +
-      `<text x="${tx}" y="${TRACK.y + 26}" class="crs-tlab" text-anchor="middle">${label}</text>`;
+      `<text x="${tx}" y="${TRACK.y + 26}" class="crs-tlab" text-anchor="${anchor}">${label}</text>`;
   };
   return (
     `<defs><linearGradient id="crs-grad" x1="0" x2="1" y1="0" y2="0">` +
       `<stop offset="0" stop-color="var(--slate)"/><stop offset="0.5" stop-color="var(--rule)"/>` +
       `<stop offset="1" stop-color="var(--amber)"/></linearGradient></defs>` +
     `<rect x="${TRACK.x0}" y="${TRACK.y - 4}" width="${TRACK.x1 - TRACK.x0}" height="8" rx="4" class="crs-track-bar" fill="url(#crs-grad)"/>` +
-    tick(-1, "−1 sensitivity") + tick(0, "0 uncertain") + tick(1, "+1 resistance") +
+    tick(-1, "−1 sensitivity", "start") + tick(0, "0 uncertain", "middle") + tick(1, "+1 resistance", "end") +
     `<g class="crs-marker" transform="translate(${x} 0)">` +
       `<path d="M0 ${TRACK.y - 16} l7 -11 l-14 0 z" class="crs-marker-tri"/>` +
       `<text x="0" y="${TRACK.y - 31}" class="crs-marker-val" text-anchor="middle">${fmtCRS(crs)}</text>` +
