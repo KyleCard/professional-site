@@ -26,7 +26,7 @@ export const LINKS = {
 // Minimal nav — the homepage is one continuous walk, so nav is utility only.
 export const NAV = [
   { label: "CV", href: "/cv" },
-  { label: "Publications", href: LINKS.scholar, external: true },
+  { label: "Publications", href: "/publications" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];

@@ -3,28 +3,10 @@ import Base from "../layouts/Base.astro";
 import yaml from "js-yaml";
 import cvYaml from "../data/cv.yaml?raw";
 import { CV_PDF, LINKS } from "../data/site";
+import { it, authors } from "../scripts/cv-format";
 
 const cv = yaml.load(cvYaml) as any;
 const { header, sections } = cv;
-
-// inline markup in copy: [text](url) → link, *text* → italic (species + journal names)
-const it = (s = "") =>
-  s
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/\*([^*]+)\*/g, "<i>$1</i>");
-
-// author list: highlight Kyle (by name — covers every entry), underline direct mentees,
-// append * for equal contribution
-type Author = string | { name: string; role?: string; mentee?: boolean; equal?: boolean };
-const isKyle = (name: string) => /^Card\s+K/i.test(name);
-const authors = (list: Author[] = []) =>
-  list
-    .map((a) => {
-      if (typeof a === "string") return isKyle(a) ? `<span class="au me">${a}</span>` : a;
-      const cls = a.role || isKyle(a.name) ? "au me" : a.mentee ? "au mentee" : "au";
-      return `<span class="${cls}">${a.name}</span>${a.equal ? "*" : ""}`;
-    })
-    .join(", ");
 ---
 <Base title="Curriculum Vitae" description="Curriculum vitae of Kyle J. Card, Ph.D. — evolutionary biologist studying the predictability and control of antibiotic resistance.">
   <div class="cv-wrap wrap">

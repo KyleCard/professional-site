@@ -56,9 +56,9 @@ sections:
     title: "Peer-Reviewed Publications"
     kind: "publications"
     stats:
-      citations: "577"
+      citations: "578"
       hIndex: "7"
-      asOf: "Google Scholar, as of June 29, 2026"
+      asOf: "Google Scholar, as of June 30, 2026"
     items:
       - authors:
           - { name: "Card K.J.", role: "first", equal: true }
@@ -77,6 +77,11 @@ sections:
         article: "e2507962122"
         year: "2025"
         doi: "https://doi.org/10.1073/pnas.2507962122"
+        featured: true
+        theme: "Collateral sensitivity"
+        cover: "PNAS_2025.png"
+        figure: "PNAS_2025_figure.png"
+        blurb: "*Staphylococcus aureus* evolved vancomycin resistance by at least two mutually exclusive genetic routes — each leaving a distinct, partly predictable pattern of collateral sensitivity to second-line drugs. This is the work behind the Collateral Response Score."
       - authors:
           - { name: "Gopalakrishnan V.", equal: true }
           - { name: "Crozier D.", mentee: true, equal: true }
@@ -96,6 +101,11 @@ sections:
         article: "e83067"
         year: "2022"
         doi: "https://doi.org/10.7554/eLife.83067"
+        featured: true
+        theme: "Open tools"
+        cover: "eLife_2022.png"
+        figure: "eLife_2022_figure.png"
+        blurb: "A low-cost, open-source bioreactor that makes continuous experimental evolution affordable and reproducible — the kind of accessible instrument the Evolution-on-a-Chip program is built on."
       - authors:
           - { name: "Jordan J.A.", mentee: true }
           - "Lenski R.E."
@@ -150,6 +160,11 @@ sections:
         article: "1230–1238"
         year: "2021"
         doi: "https://doi.org/10.1111/evo.14203"
+        featured: true
+        theme: "Fitness costs"
+        cover: "Evolution_2021.png"
+        figure: "Evolution_2021_figure.png"
+        blurb: "The fitness cost of a tetracycline-resistance mutation depended idiosyncratically on the genome it arose in — a complication for strategies that assume resistance always carries a predictable price."
       - authors:
           - { name: "Card K.J.", role: "first" }
           - "Thomas M."
@@ -162,6 +177,11 @@ sections:
         article: "e2016886118"
         year: "2021"
         doi: "https://doi.org/10.1073/pnas.2016886118"
+        featured: true
+        theme: "Genetic background"
+        cover: "PNAS_2021.png"
+        figure: "PNAS_2021_figure.png"
+        blurb: "Identical selection drove different *E. coli* backgrounds down different mutational routes to resistance — showing that genetic history shapes not just whether resistance evolves, but which genes carry it."
       - authors:
           - { name: "Card K.J.", role: "first" }
           - { name: "LaBar T." }
@@ -173,6 +193,11 @@ sections:
         article: "e3000397"
         year: "2019"
         doi: "https://doi.org/10.1371/journal.pbio.3000397"
+        featured: true
+        theme: "Historical contingency"
+        cover: "PLOS_Biology_2019.png"
+        figure: "PLOS_Biology_2019_figure.png"
+        blurb: "After decades of evolving without antibiotics, replicate *E. coli* lines differed in how readily they could evolve resistance — early evidence that a population's deep history constrains its future adaptability."
       - authors:
           - "Lenski R.E."
           - "Wiser M.J."

@@ -1,0 +1,282 @@
+---
+import Base from "../layouts/Base.astro";
+import { Image, getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import yaml from "js-yaml";
+import cvYaml from "../data/cv.yaml?raw";
+import { LINKS } from "../data/site";
+import { it, authors } from "../scripts/cv-format";
+
+const cv = yaml.load(cvYaml) as any;
+const pubSection = cv.sections.find((s: any) => s.id === "publications");
+const pubs: any[] = pubSection.items;
+const stats = pubSection.stats;
+
+// publication first-pages + principal figures live in assets/publications/.
+// Resolved by filename so adding a featured paper is just cv.yaml + two images.
+const pubImages = import.meta.glob<{ default: ImageMetadata }>(
+  "../../assets/publications/*.{png,jpg,jpeg,webp}",
+  { eager: true },
+);
+const imgFor = (file?: string): ImageMetadata | undefined =>
+  file ? pubImages[`../../assets/publications/${file}`]?.default : undefined;
+// a large optimized variant for the zoom lightbox (no upscaling past the source)
+const bigSrc = async (m?: ImageMetadata) =>
+  m ? (await getImage({ src: m, width: Math.min(1500, m.width), format: "webp" })).src : undefined;
+
+// Featured papers, ordered along the site's research arc (oldest → newest), so the
+// page traces the same climb as the homepage and lands on the Collateral-Response work.
+const ACCENTS = ["#3C5A6A", "#2C6260", "#1C6B57", "#6E7233", "#B4790F"]; // slate → teal → amber
+const featured = await Promise.all(
+  pubs
+    .filter((p) => p.featured)
+    .sort((a, b) => Number(a.year) - Number(b.year))
+    .map(async (p, i) => {
+      const cover = imgFor(p.cover);
+      const figure = imgFor(p.figure);
+      return {
+        ...p,
+        accent: ACCENTS[i % ACCENTS.length],
+        cover, figure,
+        coverFull: await bigSrc(cover),
+        figureFull: await bigSrc(figure),
+        coverCap: `First page · ${p.journal} (${p.year})`,
+        figureCap: `Principal figure · ${p.journal} (${p.year})`,
+      };
+    }),
+);
+
+const src = (p: any) => `${p.journal} ${p.volume}, ${p.article} (${p.year}).`;
+---
+<Base
+  title="Publications"
+  description="Peer-reviewed publications of Kyle J. Card, Ph.D. — on the predictability and control of antibiotic resistance, from historical contingency to collateral sensitivity."
+>
+  <div class="pub-wrap wrap">
+    <!-- ───────── masthead ───────── -->
+    <header class="pub-head">
+      <h1 class="pub-h1 reveal">Publications</h1>
+      <p class="pub-lede measure reveal">Peer-reviewed articles on the evolution of antibiotic
+        resistance, historical contingency, and collateral sensitivity, and the design of an evolutionary bioreactor.</p>
+      <div class="pub-metrics mono reveal">
+        <span><b>{stats.citations}</b> citations</span><span class="sep">·</span>
+        <span><b>h-index {stats.hIndex}</b></span><span class="sep">·</span>
+        <a href={LINKS.scholar} target="_blank" rel="noopener">Google&nbsp;Scholar →</a>
+      </div>
+      <p class="pub-asof mono reveal">{stats.asOf}</p>
+    </header>
+
+    <!-- ───────── featured (editorial features along the arc) ───────── -->
+    <section class="pub-featured" aria-labelledby="pf-h">
+      <h2 class="pub-sec-h reveal" id="pf-h"><span class="mono">01</span> Selected work</h2>
+
+      {featured.map((p) => (
+        <article class="pub-feat reveal" style={`--accent:${p.accent}`}>
+          <div class="pub-feat-grid">
+            {p.cover ? (
+              <a class="pub-cover pub-zoom" href={p.coverFull} data-cap={p.coverCap}
+                 aria-label={`Zoom the first page of ${p.journal} (${p.year})`}>
+                <Image src={p.cover} alt={`First page of "${p.title.replace(/\*/g, "")}", ${p.journal} (${p.year})`}
+                  width={420} densities={[2]} class="pub-cover-img" loading="lazy" />
+                <span class="pub-zoom-ic" aria-hidden="true">⤢</span>
+              </a>
+            ) : (
+              <div class="pub-cover pub-cover-ph" aria-hidden="true"><span class="mono">first page</span></div>
+            )}
+
+            <div class="pub-feat-body">
+              <p class="pub-theme mono"><span class="pub-dot" aria-hidden="true"></span>{p.theme}</p>
+              <h3 class="pub-feat-t" set:html={it(p.title)} />
+              <p class="au-line" set:html={authors(p.authors)} />
+              <p class="pub-src"><i>{p.journal}</i> <b>{p.volume}</b>, {p.article} ({p.year}).</p>
+              {p.blurb && <p class="pub-blurb" set:html={it(p.blurb)} />}
+              <p class="pub-links mono">
+                <a href={p.doi} target="_blank" rel="noopener">DOI →</a>
+              </p>
+            </div>
+          </div>
+
+          {p.figure && (
+            <figure class="pub-figure">
+              <a class="pub-zoom" href={p.figureFull} data-cap={p.figureCap}
+                 aria-label={`Zoom the principal figure from ${p.journal} (${p.year})`}>
+                <Image src={p.figure} alt={`Principal figure from "${p.title.replace(/\*/g, "")}", ${p.journal} (${p.year})`}
+                  widths={[520, 880, 1300]} sizes="(max-width: 900px) 92vw, 860px" class="pub-figure-img" loading="lazy" />
+                <span class="pub-zoom-ic" aria-hidden="true">⤢</span>
+              </a>
+              <figcaption class="pub-figcap mono">{p.figureCap}</figcaption>
+            </figure>
+          )}
+        </article>
+      ))}
+    </section>
+
+    <!-- ───────── the complete record ───────── -->
+    <section class="pub-archive" aria-labelledby="pa-h">
+      <h2 class="pub-sec-h reveal" id="pa-h"><span class="mono">02</span> All publications</h2>
+      <ol class="pub-list reveal" reversed>
+        {pubs.map((p) => (
+          <li class="pub-item">
+            <span class="pub-year mono">{p.year}</span>
+            <div class="pub-item-body">
+              <p class="au-line" set:html={authors(p.authors)} />
+              <p class="pub-t" set:html={it(p.title)} />
+              <p class="pub-src"><i>{p.journal}</i> <b>{p.volume}</b>, {p.article} ({p.year}). ·
+                <a class="doi" href={p.doi} target="_blank" rel="noopener">DOI</a></p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="pub-legend mono">
+        <span class="lg-mentee">underline</span> = mentee · * = equal contribution
+      </p>
+    </section>
+  </div>
+
+  <!-- ───────── figure-zoom lightbox (enhancement; no-JS opens the image) ───────── -->
+  <div id="pub-lightbox" class="pub-lightbox" role="dialog" aria-modal="true" aria-label="Figure viewer" hidden>
+    <button type="button" class="pub-lb-close" aria-label="Close figure viewer">×</button>
+    <figure class="pub-lb-fig">
+      <img class="pub-lb-img" src="" alt="" />
+      <figcaption class="pub-lb-cap mono"></figcaption>
+    </figure>
+  </div>
+</Base>
+
+<style>
+  .pub-wrap { padding: var(--s-6) 0 var(--s-8); }
+
+  /* ---- masthead ---- */
+  .pub-head { padding-bottom: var(--s-5); border-bottom: 1px solid var(--rule); margin-bottom: var(--s-6); }
+  .pub-h1 { font-family: var(--font-display); font-size: var(--t-h1); letter-spacing: -.02em; }
+  .pub-lede { font-size: var(--t-lede); color: var(--ink-soft); margin-top: var(--s-2); }
+  .pub-metrics { margin-top: var(--s-4); color: var(--slate); display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+  .pub-metrics b { color: var(--ink); font-weight: 600; }
+  .pub-metrics .sep { color: var(--rule); }
+  .pub-metrics a { color: var(--teal); text-decoration: none; }
+  .pub-metrics a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .pub-asof { color: var(--ink-faint); font-size: .72rem; margin-top: 8px; letter-spacing: .04em; }
+
+  .pub-sec-h { font-family: var(--font-display); font-size: var(--t-h3); color: var(--ink); margin-bottom: var(--s-4); }
+  .pub-sec-h .mono { color: var(--teal); font-size: .7em; margin-right: 10px; }
+
+  /* ---- featured editorial entries ---- */
+  .pub-featured { margin-bottom: var(--s-8); }
+  .pub-feat { padding: var(--s-5) 0; border-top: 1px solid var(--rule-soft); }
+  .pub-feat:first-of-type { border-top: 0; padding-top: 0; }
+  .pub-feat-grid { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+    gap: clamp(20px, 4vw, 48px); align-items: start; }
+
+  /* first-page reprint card */
+  .pub-cover { position: relative; display: block; border-radius: 2px; overflow: hidden;
+    border: 1px solid var(--rule); background: #fff; box-shadow: 0 18px 40px -28px rgba(34,45,42,.6);
+    cursor: zoom-in; transition: transform .25s ease, box-shadow .25s ease; }
+  .pub-cover:hover { transform: translateY(-3px); box-shadow: 0 26px 52px -28px rgba(34,45,42,.65); }
+  .pub-cover-img { width: 100%; height: auto; display: block; }
+  .pub-cover-ph { aspect-ratio: 0.77; display: grid; place-items: center; background: var(--paper-warm);
+    border: 1px dashed var(--rule); color: var(--slate); cursor: default; box-shadow: none; }
+  .pub-zoom-ic { position: absolute; right: 8px; bottom: 8px; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb, var(--ink) 78%, transparent); color: var(--paper);
+    font-size: 14px; opacity: 0; transition: opacity .2s ease; pointer-events: none; }
+  .pub-zoom:hover .pub-zoom-ic, .pub-zoom:focus-visible .pub-zoom-ic { opacity: 1; }
+  .pub-zoom:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 3px; }
+
+  /* meta column */
+  .pub-feat-body { padding-top: 4px; }
+  .pub-theme { color: var(--accent, var(--teal)); letter-spacing: .14em; text-transform: uppercase;
+    font-size: .72rem; display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+  .pub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent, var(--teal)); flex: none; }
+  .pub-feat-t { font-family: var(--font-display); font-size: clamp(1.2rem, 1rem + .9vw, 1.6rem);
+    line-height: 1.2; color: var(--ink); margin-bottom: 10px; }
+  .au-line { font-size: .95rem; color: var(--ink-soft); margin-bottom: 4px; }
+  .au-line :global(.me) { color: var(--teal); font-weight: 600; }
+  .au-line :global(.mentee) { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--rule); }
+  .pub-src { color: var(--ink-soft); font-size: .92rem; }
+  .pub-src i { font-style: italic; }
+  .pub-blurb { color: var(--ink); font-size: 1.02rem; line-height: 1.6; margin: 14px 0 16px;
+    padding-left: 16px; border-left: 2px solid var(--accent, var(--teal)); max-width: 40rem; }
+  .pub-blurb :global(i) { font-style: italic; }
+  .pub-links a { color: var(--teal); text-decoration: none; letter-spacing: .06em; }
+  .pub-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* principal figure plate */
+  .pub-figure { margin: var(--s-4) 0 0; }
+  .pub-figure .pub-zoom { position: relative; display: block; max-width: 860px; margin: 0 auto;
+    border: 1px solid var(--rule); background: #fff; border-radius: 2px; overflow: hidden;
+    box-shadow: 0 18px 44px -30px rgba(34,45,42,.55); cursor: zoom-in; }
+  .pub-figure-img { width: 100%; height: auto; display: block; }
+  .pub-figcap { text-align: center; color: var(--ink-faint); font-size: .72rem; margin-top: 10px; letter-spacing: .06em; }
+
+  /* ---- archive list ---- */
+  .pub-list { list-style: none; counter-reset: none; }
+  .pub-item { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 18px; padding: 16px 0;
+    border-top: 1px solid var(--rule-soft); }
+  .pub-item:first-child { border-top: 0; }
+  .pub-year { color: var(--slate); padding-top: 2px; font-size: .82rem; }
+  .pub-t { color: var(--ink); font-weight: 500; margin: 3px 0; }
+  .pub-t :global(i) { font-style: italic; }
+  .pub-item .pub-src { font-size: .9rem; }
+  .doi { color: var(--teal); text-decoration: none; }
+  .doi:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .pub-legend { margin-top: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--rule-soft);
+    color: var(--ink-faint); letter-spacing: .08em; font-size: .72rem; }
+  .pub-legend .lg-eq { color: var(--teal); font-weight: 600; }
+  .pub-legend .lg-mentee { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--rule); }
+
+  /* ---- lightbox ---- */
+  .pub-lightbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: clamp(16px, 4vw, 56px);
+    background: color-mix(in srgb, #0d100e 88%, transparent); backdrop-filter: blur(3px); }
+  .pub-lightbox[hidden] { display: none; }
+  .pub-lb-fig { margin: 0; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .pub-lb-img { max-width: 100%; max-height: 84vh; width: auto; height: auto; background: #fff;
+    border-radius: 3px; box-shadow: 0 30px 80px -30px rgba(0,0,0,.7); }
+  .pub-lb-cap { color: rgba(247,242,228,.82); font-size: .76rem; letter-spacing: .06em; text-align: center; }
+  .pub-lb-close { position: fixed; top: 16px; right: 20px; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid rgba(247,242,228,.3); background: rgba(20,24,30,.6); color: var(--paper);
+    font-size: 1.5rem; line-height: 1; cursor: pointer; transition: background .2s, border-color .2s; }
+  .pub-lb-close:hover { background: rgba(20,24,30,.9); border-color: rgba(247,242,228,.6); }
+  .pub-lb-close:focus-visible { outline: 2.5px solid var(--amber-bright); outline-offset: 2px; }
+
+  @media (max-width: 720px) {
+    .pub-feat-grid { grid-template-columns: 1fr; gap: var(--s-3); }
+    .pub-cover { max-width: 240px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pub-cover, .pub-zoom-ic { transition: none; }
+  }
+</style>
+
+<script>
+  const lb = document.getElementById("pub-lightbox");
+  if (lb) {
+    const img = lb.querySelector(".pub-lb-img") as HTMLImageElement;
+    const cap = lb.querySelector(".pub-lb-cap") as HTMLElement;
+    const closeBtn = lb.querySelector(".pub-lb-close") as HTMLButtonElement;
+    let lastFocus: HTMLElement | null = null;
+
+    const open = (href: string, alt: string, caption: string, from: HTMLElement) => {
+      img.src = href; img.alt = alt; cap.textContent = caption;
+      lastFocus = from; lb.hidden = false; document.documentElement.style.overflow = "hidden";
+      closeBtn.focus();
+    };
+    const close = () => {
+      lb.hidden = true; img.src = ""; document.documentElement.style.overflow = "";
+      lastFocus?.focus();
+    };
+
+    document.querySelectorAll<HTMLAnchorElement>(".pub-zoom").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        const innerImg = a.querySelector("img");
+        open(a.getAttribute("href") || "", innerImg?.getAttribute("alt") || "", a.dataset.cap || "", a);
+      });
+    });
+    closeBtn.addEventListener("click", close);
+    lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
+    document.addEventListener("keydown", (e) => {
+      if (lb.hidden) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "Tab") { e.preventDefault(); closeBtn.focus(); } // trap on the only control
+    });
+  }
+</script>
