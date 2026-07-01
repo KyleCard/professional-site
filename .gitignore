@@ -14,3 +14,9 @@ preview/preview.log
 # os / editor cruft
 .DS_Store
 Thumbs.db
+
+# page previews (for development)
+preview/
+
+# README.md (for personal use)
+README.md
