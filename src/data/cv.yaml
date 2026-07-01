@@ -1,11 +1,16 @@
 # Structured CV — transcribed from Card_-_Faculty_Package_-_URochester.pdf
-# (CV section, pages 3–9). Drives the /cv page. Update this file + drop a new
+# (CV section, pages 3–9). Drives the /cv page (and the /publications page, which
+# showcases the entries flagged `featured`). Update this file + drop a new
 # PDF in public/cv/ (and bump CV_PDF in src/data/site.ts) to keep them in sync.
 #
 # Conventions:
 #   *text*  -> rendered italic (species + journal names)
 #   authors: role: first|senior highlights Kyle (tan/blue); mentee: true
 #            underlines a direct mentee; equal: true appends the "*".
+#   Featured pubs (/publications): featured: true + theme, cover, figure
+#            (image filenames in assets/publications/), blurb, and figureCaption
+#            — the figure's legend title, shown under the figure. Blank falls back
+#            to "Principal figure · <journal> (<year>)"; use *italics* for species.
 
 header:
   name: "Kyle J. Card, Ph.D."
@@ -58,7 +63,7 @@ sections:
     stats:
       citations: "578"
       hIndex: "7"
-      asOf: "Google Scholar, as of June 30, 2026"
+      asOf: "Google Scholar, as of July 1, 2026"
     items:
       - authors:
           - { name: "Card K.J.", role: "first", equal: true }
@@ -81,7 +86,8 @@ sections:
         theme: "Collateral sensitivity"
         cover: "PNAS_2025.png"
         figure: "PNAS_2025_figure.png"
-        blurb: "*Staphylococcus aureus* evolved vancomycin resistance by at least two mutually exclusive genetic routes — each leaving a distinct, partly predictable pattern of collateral sensitivity to second-line drugs. This is the work behind the Collateral Response Score."
+        figureCaption: "Evolved vancomycin-intermediate *Staphylococcus aureus* (VISA) lines exhibit diverging collateral sensitivity to cefazolin and nafcillin."
+        blurb: "*Staphylococcus aureus* evolved vancomycin resistance by at least two mutually exclusive genetic routes — each leaving a distinct, partly predictable pattern of collateral sensitivity to second-line drugs. This work introduces the Collateral Response Score."
       - authors:
           - { name: "Gopalakrishnan V.", equal: true }
           - { name: "Crozier D.", mentee: true, equal: true }
@@ -105,7 +111,8 @@ sections:
         theme: "Open tools"
         cover: "eLife_2022.png"
         figure: "eLife_2022_figure.png"
-        blurb: "A low-cost, open-source bioreactor that makes continuous experimental evolution affordable and reproducible — the kind of accessible instrument the Evolution-on-a-Chip program is built on."
+        figureCaption: "Schematic illustration of the EVolutionary biorEactor (EVE) hardware and software architecture."
+        blurb: "A low-cost, open-source bioreactor that makes continuous experimental evolution affordable and reproducible."
       - authors:
           - { name: "Jordan J.A.", mentee: true }
           - "Lenski R.E."
@@ -164,6 +171,7 @@ sections:
         theme: "Fitness costs"
         cover: "Evolution_2021.png"
         figure: "Evolution_2021_figure.png"
+        figureCaption: "Fitnesses of tetracycline-resistant mutants relative to their LTEE parental strains."
         blurb: "The fitness cost of a tetracycline-resistance mutation depended idiosyncratically on the genome it arose in — a complication for strategies that assume resistance always carries a predictable price."
       - authors:
           - { name: "Card K.J.", role: "first" }
@@ -181,6 +189,7 @@ sections:
         theme: "Genetic background"
         cover: "PNAS_2021.png"
         figure: "PNAS_2021_figure.png"
+        figureCaption: "Specificity of genomic evolution with respect to genetic background."
         blurb: "Identical selection drove different *E. coli* backgrounds down different mutational routes to resistance — showing that genetic history shapes not just whether resistance evolves, but which genes carry it."
       - authors:
           - { name: "Card K.J.", role: "first" }
@@ -197,6 +206,7 @@ sections:
         theme: "Historical contingency"
         cover: "PLOS_Biology_2019.png"
         figure: "PLOS_Biology_2019_figure.png"
+        figureCaption: "Genetic background affects the evolvability of LTEE lines exposed to antibiotics."
         blurb: "After decades of evolving without antibiotics, replicate *E. coli* lines differed in how readily they could evolve resistance — early evidence that a population's deep history constrains its future adaptability."
       - authors:
           - "Lenski R.E."

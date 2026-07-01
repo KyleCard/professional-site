@@ -34,6 +34,8 @@ const featured = await Promise.all(
     .map(async (p, i) => {
       const cover = imgFor(p.cover);
       const figure = imgFor(p.figure);
+      // the figure's own legend title (paste it into cv.yaml); falls back to a label
+      const legend = p.figureCaption?.trim() || `Principal figure · ${p.journal} (${p.year})`;
       return {
         ...p,
         accent: ACCENTS[i % ACCENTS.length],
@@ -41,7 +43,8 @@ const featured = await Promise.all(
         coverFull: await bigSrc(cover),
         figureFull: await bigSrc(figure),
         coverCap: `First page · ${p.journal} (${p.year})`,
-        figureCap: `Principal figure · ${p.journal} (${p.year})`,
+        figCapHtml: it(legend),                // rendered caption (keeps *species* italics)
+        figCapText: legend.replace(/\*/g, ""), // plain text for the lightbox caption attribute
       };
     }),
 );
@@ -50,14 +53,16 @@ const src = (p: any) => `${p.journal} ${p.volume}, ${p.article} (${p.year}).`;
 ---
 <Base
   title="Publications"
-  description="Peer-reviewed publications of Kyle J. Card, Ph.D. — on the predictability and control of antibiotic resistance, from historical contingency to collateral sensitivity."
+  description="Peer-reviewed articles of Kyle J. Card, Ph.D. on the evolution of antibiotic resistance, 
+  historical contingency, collateral sensitivity, and the design and implementation of an evolutionary bioreactor."
 >
   <div class="pub-wrap wrap">
     <!-- ───────── masthead ───────── -->
     <header class="pub-head">
       <h1 class="pub-h1 reveal">Publications</h1>
-      <p class="pub-lede measure reveal">Peer-reviewed articles on the evolution of antibiotic
-        resistance, historical contingency, and collateral sensitivity, and the design of an evolutionary bioreactor.</p>
+      <p class="pub-lede measure reveal">Articles on the evolution of antibiotic
+        resistance, historical contingency, collateral sensitivity, and the design 
+        and implementation of an evolutionary bioreactor.</p>
       <div class="pub-metrics mono reveal">
         <span><b>{stats.citations}</b> citations</span><span class="sep">·</span>
         <span><b>h-index {stats.hIndex}</b></span><span class="sep">·</span>
@@ -98,13 +103,13 @@ const src = (p: any) => `${p.journal} ${p.volume}, ${p.article} (${p.year}).`;
 
           {p.figure && (
             <figure class="pub-figure">
-              <a class="pub-zoom" href={p.figureFull} data-cap={p.figureCap}
+              <a class="pub-zoom" href={p.figureFull} data-cap={p.figCapText}
                  aria-label={`Zoom the principal figure from ${p.journal} (${p.year})`}>
                 <Image src={p.figure} alt={`Principal figure from "${p.title.replace(/\*/g, "")}", ${p.journal} (${p.year})`}
                   widths={[520, 880, 1300]} sizes="(max-width: 900px) 92vw, 860px" class="pub-figure-img" loading="lazy" />
                 <span class="pub-zoom-ic" aria-hidden="true">⤢</span>
               </a>
-              <figcaption class="pub-figcap mono">{p.figureCap}</figcaption>
+              <figcaption class="pub-figcap" set:html={p.figCapHtml} />
             </figure>
           )}
         </article>
@@ -205,7 +210,9 @@ const src = (p: any) => `${p.journal} ${p.volume}, ${p.article} (${p.year}).`;
     border: 1px solid var(--rule); background: #fff; border-radius: 2px; overflow: hidden;
     box-shadow: 0 18px 44px -30px rgba(34,45,42,.55); cursor: zoom-in; }
   .pub-figure-img { width: 100%; height: auto; display: block; }
-  .pub-figcap { text-align: center; color: var(--ink-faint); font-size: .72rem; margin-top: 10px; letter-spacing: .06em; }
+  .pub-figcap { text-align: center; color: var(--ink-soft); font-size: .86rem; line-height: 1.5;
+    max-width: 46rem; margin: 12px auto 0; }
+  .pub-figcap :global(i) { font-style: italic; }
 
   /* ---- archive list ---- */
   .pub-list { list-style: none; counter-reset: none; }
