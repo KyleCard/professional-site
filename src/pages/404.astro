@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Page not found" description="That page couldn't be found.">
+  <section class="nf wrap">
+    <p class="eyebrow mono reveal">Error 404 · off the trail</p>
+    <h1 class="nf-h reveal">This path doesn't lead anywhere.</h1>
+    <p class="nf-lead measure reveal">
+      The page you're after has moved, or never existed.
+    </p>
+    <p class="nf-home reveal"><a href="/">Return to the trailhead →</a></p>
+  </section>
+</Base>
+
+<style>
+  .nf { padding-top: var(--page-top); padding-bottom: var(--s-8); min-height: 62vh; }
+  /* tuck the kicker above so the h1 lands at --page-top like the other pages */
+  .eyebrow { color: var(--slate); margin-top: calc(-1lh - var(--s-3)); margin-bottom: var(--s-3); }
+  .nf-h { font-family: var(--font-display); font-size: var(--t-h1); letter-spacing: -.02em; margin-bottom: var(--s-3); }
+  .nf-lead { color: var(--ink-soft); font-size: var(--t-lede); margin-bottom: var(--s-4); }
+  .nf-home a { color: var(--teal); font-family: var(--font-mono); text-transform: uppercase;
+    letter-spacing: .1em; font-size: .8rem; text-decoration: none; }
+  .nf-home a:hover { text-decoration: underline; text-underline-offset: 4px; }
+</style>
