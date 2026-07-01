@@ -1,6 +1,7 @@
 ---
 // Minimal "field-station nameplate" nav. The homepage is one continuous walk,
-// so the nav is utility, not the site's spine.
+// so the nav is utility, not the site's spine. On narrow screens the links
+// collapse into an accessible hamburger disclosure.
 import { NAV, SITE } from "../data/site";
 interface Props { variant?: "hero" | "solid"; }
 const { variant = "solid" } = Astro.props;
@@ -8,7 +9,10 @@ const path = Astro.url.pathname.replace(/\/$/, "");
 ---
 <header class:list={["nav", variant]}>
   <a class="brand mono" href="/">{SITE.fullName}</a>
-  <nav class="links mono" aria-label="Primary">
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
+    <span class="nav-toggle-bars" aria-hidden="true"></span>
+  </button>
+  <nav class="links mono" id="nav-menu" aria-label="Primary">
     {NAV.map((l) => (
       <a
         href={l.href}
@@ -26,36 +30,97 @@ const path = Astro.url.pathname.replace(/\/$/, "");
     padding: 14px clamp(16px, 4vw, 40px);
   }
   .nav.hero { background: transparent; }
-  .nav.hero .brand, .nav.hero .links a { mix-blend-mode: multiply; }
-  /* once scrolled off the hero, the nav gains a legible backdrop */
+  .nav.hero .brand, .nav.hero .links a, .nav.hero .nav-toggle { mix-blend-mode: multiply; }
+  /* once scrolled off the hero — or with the mobile menu open — the nav gains a legible backdrop */
   .nav.solid,
-  .nav.hero[data-scrolled] {
-    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  .nav.hero[data-scrolled],
+  .nav.hero[data-open] {
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
     backdrop-filter: saturate(1.1) blur(8px);
     border-bottom: 1px solid var(--rule-soft);
   }
-  .nav.hero[data-scrolled] .brand, .nav.hero[data-scrolled] .links a { mix-blend-mode: normal; }
+  .nav.hero[data-scrolled] .brand, .nav.hero[data-scrolled] .links a, .nav.hero[data-scrolled] .nav-toggle,
+  .nav.hero[data-open] .brand, .nav.hero[data-open] .nav-toggle { mix-blend-mode: normal; }
   .brand { color: var(--ink); text-decoration: none; font-weight: 500; }
   .brand:hover { color: var(--teal); }
   .links { display: flex; gap: clamp(14px, 2vw, 24px); }
   .links a { color: var(--ink); text-decoration: none; }
   .links a:hover { color: var(--teal); }
   .links a[aria-current="page"] { color: var(--teal); text-decoration: underline; text-underline-offset: 4px; }
-  @media (max-width: 640px) {
-    .nav.hero .links { display: none; }
-    .brand { font-size: 0.66rem; }
+
+  /* ---- hamburger button (hidden until the links collapse) ---- */
+  .nav-toggle { display: none; position: relative; width: 42px; height: 42px; margin-right: -8px;
+    border: 0; background: none; padding: 0; cursor: pointer; color: var(--ink); }
+  .nav-toggle:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .nav-toggle-bars { position: absolute; left: 10px; right: 10px; top: 50%; transform: translateY(-50%);
+    height: 2px; background: currentColor; border-radius: 2px; }
+  /* top/bottom bars span the full width of the middle bar (left/right: 0 within it) */
+  .nav-toggle-bars::before, .nav-toggle-bars::after { content: ""; position: absolute; left: 0; right: 0;
+    height: 2px; background: currentColor; border-radius: 2px; transition: top .22s ease, transform .22s ease; }
+  .nav-toggle-bars::before { top: -6px; }
+  .nav-toggle-bars::after { top: 6px; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle-bars { background: transparent; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle-bars::before { top: 0; transform: rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] .nav-toggle-bars::after { top: 0; transform: rotate(-45deg); }
+
+  @media (max-width: 700px) {
+    .nav-toggle { display: inline-flex; }
+    /* the same nav becomes a full-width dropdown sheet below the bar */
+    .links {
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      padding: 4px clamp(16px, 4vw, 40px) 12px;
+      background: color-mix(in srgb, var(--paper) 97%, transparent);
+      backdrop-filter: saturate(1.1) blur(8px);
+      border-bottom: 1px solid var(--rule-soft);
+      box-shadow: 0 20px 40px -30px rgba(34, 45, 42, .6);
+    }
+    .links, .nav:not([data-open]) .links { display: none; }
+    .nav[data-open] .links { display: flex; }
+    .links a { padding: 14px 2px; font-size: .82rem; mix-blend-mode: normal; }
+    .links a + a { border-top: 1px solid var(--rule-soft); }
+    .links a[aria-current="page"] { text-decoration: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-toggle-bars::before, .nav-toggle-bars::after { transition: none; }
   }
 </style>
 
 <script>
   // Hero nav gains a backdrop once you scroll off the establishing shot.
-  const nav = document.querySelector(".nav.hero");
-  if (nav) {
+  const heroNav = document.querySelector<HTMLElement>(".nav.hero");
+  if (heroNav) {
     const onScroll = () => {
-      if (scrollY > window.innerHeight * 0.55) nav.setAttribute("data-scrolled", "");
-      else nav.removeAttribute("data-scrolled");
+      if (scrollY > window.innerHeight * 0.55) heroNav.setAttribute("data-scrolled", "");
+      else heroNav.removeAttribute("data-scrolled");
     };
     addEventListener("scroll", onScroll, { passive: true });
     onScroll();
+  }
+
+  // Mobile menu: an accessible disclosure (button toggles the links panel).
+  const nav = document.querySelector<HTMLElement>(".nav");
+  const toggle = nav?.querySelector<HTMLButtonElement>(".nav-toggle");
+  const menu = nav?.querySelector<HTMLElement>(".links");
+  if (nav && toggle && menu) {
+    const isOpen = () => toggle.getAttribute("aria-expanded") === "true";
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      nav.toggleAttribute("data-open", open);
+    };
+    toggle.addEventListener("click", () => setOpen(!isOpen()));
+    // close after choosing a link
+    menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+    // Esc closes and returns focus to the button
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isOpen()) { setOpen(false); toggle.focus(); }
+    });
+    // click outside the nav closes
+    document.addEventListener("click", (e) => {
+      if (isOpen() && !nav.contains(e.target as Node)) setOpen(false);
+    });
+    // if the viewport grows back to the desktop layout, reset
+    addEventListener("resize", () => { if (innerWidth > 700 && isOpen()) setOpen(false); });
   }
 </script>
