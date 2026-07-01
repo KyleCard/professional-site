@@ -39,8 +39,9 @@ const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Cleveland+Clini
 </Base>
 
 <style>
-  .contact { padding-top: clamp(96px, 16vh, 168px); padding-bottom: var(--s-7); }
-  .eyebrow { color: var(--slate); margin-bottom: var(--s-3); }
+  .contact { padding-top: var(--page-top); padding-bottom: var(--s-7); }
+  /* tuck the kicker into the space above so the h1 lands at --page-top like the other pages */
+  .eyebrow { color: var(--slate); margin-top: calc(-1lh - var(--s-3)); margin-bottom: var(--s-3); }
   .big { font-size: var(--t-h1); margin-bottom: var(--s-3); }
   .lead { color: var(--ink-soft); font-size: var(--t-lede); margin-bottom: var(--s-6); }
 

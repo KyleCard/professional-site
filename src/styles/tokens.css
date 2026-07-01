@@ -55,6 +55,8 @@
   --maxw: 1200px;
   --measure: 38rem;     /* readable line length */
   --radius: 3px;
+  /* consistent top offset for utility-page titles below the fixed nav (cv, publications, blog, contact) */
+  --page-top: clamp(96px, 16vh, 168px);
 
   /* z-scale */
   --z-terrain: 0; --z-content: 5; --z-nav: 40; --z-skip: 100;
