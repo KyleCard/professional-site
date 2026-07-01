@@ -16,7 +16,7 @@
   /* ---- ink ---- */
   --ink:          #222D2A;   /* dark slate-teal (colony shadow / terrain ink) ~13:1 on paper */
   --ink-soft:     #4F5E59;   /* secondary text (≥4.5:1 on paper) */
-  --ink-faint:    #6B776F;   /* tertiary / captions */
+  --ink-faint:    #5C685F;   /* tertiary / captions — ~4.6:1 on paper (AA) */
 
   /* ---- accents (all cool/earthy — never terracotta, never neon) ---- */
   --slate:        #3C5A6A;   /* cool valley + the fitness-axis blue */
@@ -25,7 +25,7 @@
   --teal-soft:    #5E8F7E;   /* vegetated mid-slope (decorative, large only) */
 
   /* ---- elevation amber (gated to high ground) ---- */
-  --amber:        #B4790F;   /* large display peak text — ≥3:1 on paper */
+  --amber:        #A06A0C;   /* large display peak text — ~3.6:1 on paper (AA-large; ≥3:1 even over the hero scrim) */
   --amber-deep:   #875A10;   /* amber at body size — ≥4.5:1 on paper */
   --amber-bright: #DE9F2A;   /* non-text marks only (node fills, climber) — fails text contrast by design */
 
