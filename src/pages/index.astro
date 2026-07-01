@@ -10,6 +10,7 @@ import ls01 from "../../assets/research/landscape-01-day.png";
 import ls02 from "../../assets/research/landscape-02-day.png";
 import ls03 from "../../assets/research/landscape-03-day.png";
 import ls04 from "../../assets/research/landscape-04-day.png";
+import micPlate from "../../assets/MIC_microbroth_dilution.jpg";
 ---
 <Base navVariant="hero">
   <!-- ════════════════ TRAILHEAD — video hero ════════════════ -->
@@ -156,11 +157,17 @@ import ls04 from "../../assets/research/landscape-04-day.png";
       <p class="card-lab mono reveal">The Card Lab</p>
       <h2 class="title chip-title reveal" id="chip-h">Evolution-on-a-<span class="peak">Chip.</span></h2>
       <div class="reveal"><Chip /></div>
-      <p class="chip-coda reveal">Susceptibility tests are snapshots in time that inform clinicians about whether an antibiotic works today.
-      They cannot provide information about where infections are heading once treatment begins. By evolving <span class="sp">P. aeruginosa</span> 
-       within a living model of the cystic fibrosis airway, we will observe and track resistance and its collateral consequences as they emerge, 
-       rather than infer them from a single endpoint. Acting on that knowledge means scoring the <em>collateral response</em> — its direction, 
-       and how confidently we can call it.</p>
+      <div class="chip-coda-row reveal">
+        <p class="chip-coda">Susceptibility tests are snapshots in time that inform clinicians about whether an antibiotic works today.
+        They cannot provide information about where infections are heading once treatment begins. By evolving <span class="sp">P. aeruginosa</span>
+         within a living model of the cystic fibrosis airway, we will observe and track resistance and its collateral consequences as they emerge,
+         rather than infer them from a single endpoint. Acting on that knowledge means scoring the <em>collateral response</em> — its direction,
+         and how confidently we can call it.</p>
+        <figure class="chip-coda-fig">
+          <Image src={micPlate} class="chip-coda-img" widths={[360, 560]} sizes="(max-width: 900px) 88vw, 400px" loading="lazy"
+            alt="A 96-well broth microdilution plate held in a gloved hand — the assay used to measure antibiotic susceptibility." />
+        </figure>
+      </div>
     </div>
   </section>
 
@@ -252,11 +259,18 @@ import ls04 from "../../assets/research/landscape-04-day.png";
     border-top: 1px solid var(--rule-soft); padding: var(--s-7) 0 var(--s-8); }
   .chip-title { font-size: var(--t-h1); margin-bottom: var(--s-4); }
   .chip-title .peak { color: var(--amber); }
-  /* spans the full wrap width — same as the chip abstract above and the CRS card below — and justifies to those flush edges */
-  .chip-coda { margin: var(--s-6) 0 0; text-align: justify; text-wrap: pretty;
-    -webkit-hyphens: auto; hyphens: auto; /* keeps justified spacing tight on narrow widths */
+  /* the bridge paragraph beside a broth-microdilution plate (the susceptibility test it describes) */
+  .chip-coda-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+    gap: clamp(24px, 4vw, 56px); align-items: center; margin-top: var(--s-6); }
+  /* justified gives the text a clean right edge facing the photo across the gutter */
+  .chip-coda { text-align: justify; text-wrap: pretty; -webkit-hyphens: auto; hyphens: auto;
     font-size: var(--t-lede); line-height: 1.6; color: var(--ink-soft); }
   .chip-coda em { font-style: italic; color: var(--teal); }
+  .chip-coda-fig { margin: 0; }
+  .chip-coda-img { width: 100%; height: auto; display: block; border-radius: var(--radius);
+    border: 1px solid var(--rule); box-shadow: 0 20px 44px -30px rgba(34, 45, 42, .55); }
+  .chip-coda-cap { margin-top: 10px; text-align: center; color: var(--ink-faint);
+    font-size: .72rem; letter-spacing: .06em; }
 
   /* ---- team + contact ---- */
   .team-sec { padding: var(--s-8) 0 var(--s-7); }
@@ -273,6 +287,9 @@ import ls04 from "../../assets/research/landscape-04-day.png";
     .climb-graphic { display: none; }
     .step { min-height: auto; padding: 7vh clamp(18px, 5vw, 32px); }
     .step-card { max-width: 100%; backdrop-filter: none; }
+    /* stack the bridge paragraph over the plate photo (photo centered) */
+    .chip-coda-row { grid-template-columns: 1fr; gap: var(--s-4); }
+    .chip-coda-fig { max-width: 460px; margin-inline: auto; }
   }
 </style>
 
