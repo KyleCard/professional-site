@@ -66,8 +66,16 @@ const ogImage = new URL(image, SITE.url).href;
         els.forEach((e) => e.classList.add("in"));
       } else {
         const io = new IntersectionObserver(
-          (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }),
-          { threshold: 0.16, rootMargin: "0px 0px -8% 0px" },
+          (entries) => entries.forEach((e) => {
+            // elements taller than the viewport (e.g. the stacked team grid on mobile) can never
+            // reach a ratio threshold, so accept any intersection for them
+            const tall = e.boundingClientRect.height > innerHeight * 0.8;
+            if (e.isIntersecting && (e.intersectionRatio >= 0.16 || tall)) {
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }
+          }),
+          { threshold: [0, 0.16], rootMargin: "0px 0px -8% 0px" },
         );
         els.forEach((e) => io.observe(e));
       }
