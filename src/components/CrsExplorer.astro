@@ -45,11 +45,11 @@ const fread0 = densityStats(fComps0).reading;
 <section class="crs" aria-labelledby="crs-h">
   <div class="wrap">
     <p class="card-lab mono reveal">The Card Lab · interactive</p>
-    <h2 class="title crs-title reveal" id="crs-h">Will the next antibiotic still <span class="peak">work?</span></h2>
+    <h2 class="title crs-title reveal" id="crs-h">Will the next drug still <span class="peak">work?</span></h2>
     <p class="crs-intro measure reveal">
-      When a pathogen evolves resistance to one drug, its susceptibility to others can change. The
-      <strong>Collateral Response Score</strong> captures the <em>direction</em> of that change —
-      its sign — and how <em>predictable</em> it is — its magnitude.
+      When a pathogen evolves resistance to one antibiotic, its susceptibility to others can change. The
+      <strong>Collateral Response Score</strong> captures the <em>direction</em> of that change (its sign)
+      and its <em>predictability</em> (its magnitude).
     </p>
 
     <div class="crs-card reveal">
@@ -68,7 +68,10 @@ const fread0 = densityStats(fComps0).reading;
       <div role="tabpanel" id="crs-panel-1" aria-labelledby="crs-tab-1" class="crs-panel" data-crs-root>
         <h3 class="crs-panel-h">Live CRS calculator</h3>
         <p class="crs-howto mono" id="crs-howto">
-          Drag the dots — or focus one and press <kbd>↑</kbd> <kbd>↓</kbd> — to set each replicate's response.
+          <strong>See how the CRS is calculated</strong>. Each dot below is a replicate population, evolved separately and measured against a second drug.
+          Drag the dots — or focus one and press <kbd>↑</kbd> <kbd>↓</kbd> — and watch the score respond. 
+          Notice that a given score can arise in two very different ways: when populations are split between resistance and sensitivity, 
+          or when there is consistent change across replicates. Toggle between the Worked Example and Full Agreement presets to observe this distinction.
         </p>
 
         <div class="crs-grid">
@@ -113,9 +116,12 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 2 · Layer 2 pathway profile ───────── -->
       <div role="tabpanel" id="crs-panel-2" aria-labelledby="crs-tab-2" class="crs-panel" data-crs-pathways>
         <h3 class="crs-panel-h">Pathway collateral profile</h3>
-        <p class="crs-howto mono">A panel of second-line drugs. An early evolutionary fork sends a
-          population down one of two routes — and the collateral profile flips with the path.</p>
-
+        <p class="crs-howto mono">
+        <strong>The same drug, two different outcomes</strong>. A population may evolve antibiotic resistance through different 
+        genetic pathways. Its collateral response to other drugs can change depending on which route the population takes. 
+        Toggle between two evolutionary pathways below and watch the collateral profile invert across several second-line drugs: 
+        knowing <em>how</em> resistance evolved is often as useful as knowing <em>that</em> it evolved.
+        
         <!-- interactive (revealed by JS) -->
         <div class="crs-pwrap" hidden>
           <div class="crs-toggle" role="radiogroup" aria-label="Evolutionary pathway">
@@ -138,9 +144,12 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 3 · Layer 3 distribution ───────── -->
       <div role="tabpanel" id="crs-panel-3" aria-labelledby="crs-tab-3" class="crs-panel" data-crs-dist>
         <h3 class="crs-panel-h">CRS as a distribution</h3>
-        <p class="crs-howto mono">A CRS is an estimate, not a verdict. Resampling it gives a distribution, with its
-          <em>width</em> providing actionable information: narrow and far from zero is a confident call; wide, or split across
-          zero, means a clinician genuinely cannot say which way evolution will go.</p>
+        <p class="crs-howto mono">
+        <strong>A single number can hide how sure we really are</strong>. Each CRS value is an estimate, not a verdict, because it is
+        drawn from a limited sample of replicates that could have landed differently by chance. Resampling gives a distribution, with its
+        <em>width</em> providing actionable information: narrow and far from zero is a confident call; wide, or straddling
+        zero, means a clinician genuinely cannot say which way evolution will go. The shape of the distribution below 
+        is often more informative than the number itself.</p>
 
         <!-- interactive (revealed by JS) -->
         <div class="crs-dwrap" hidden>
@@ -179,9 +188,13 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 4 · Layer 4 context landscape ───────── -->
       <div role="tabpanel" id="crs-panel-4" aria-labelledby="crs-tab-4" class="crs-panel" data-crs-context>
         <h3 class="crs-panel-h">CRS across contexts</h3>
-        <p class="crs-howto mono">The CRS might differ between laboratory and within-host conditions. Drag the
-          marker — or focus it and press <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> — to observe how <strong>{ex.drug}</strong> 
-          CRS might change as the environment shifts from lab growth media to an inflamed, host-like airway.</p>
+        <p class="crs-howto mono">
+        <strong>Predictability isn't fixed; it depends on the environmental context in which evolution happens</strong>.
+        In the preceding examples, the CRS and its distributions were measured in a simplified environment. 
+        However, a bacterium evolving inside an inflamed human airway faces different selective pressures than one evolving in a flask.
+        Thus, a collateral response that looks reliable in one setting may become far less certain in another. This is the open question 
+        motivating the <em>Evolution-on-a-Chip</em> platform. Drag the marker — or focus it and press <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> — 
+        to see, conceptually, how context could reshape what we think we know.</p>
 
         <div class="crs-fgrid">
           <div class="crs-field-wrap">

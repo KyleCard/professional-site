@@ -11,9 +11,9 @@ const imgs = import.meta.glob<{ default: ImageMetadata }>("../../../assets/blog/
 const imgFor = (f?: string) => (f ? Object.entries(imgs).find(([p]) => p.endsWith("/" + f))?.[1].default : undefined);
 const fmt = (d: Date) => new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(d);
 ---
-<Base title="Field notes" description="Essays and recorded talks by Kyle J. Card on evolution, antibiotic resistance, responsible science, and disability in STEM.">
+<Base title="Blog" description="Essays and recorded talks by Kyle J. Card on evolution, antibiotic resistance, responsible science, and disability in STEM.">
   <section class="blog wrap">
-    <p class="eyebrow mono reveal">Field notes</p>
+    <p class="eyebrow mono reveal">Blog</p>
     <h1 class="big reveal">Writing &amp; talks.</h1>
     <p class="lead measure reveal">Essays and recorded talks on the evolution of antibiotic resistance, the
       responsible conduct of research, and disability in science.</p>

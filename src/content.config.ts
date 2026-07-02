@@ -1,7 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
-// Blog ("Field notes") — markdown posts in src/content/blog/.
+// Blog — markdown posts in src/content/blog/.
 // Featured image is a filename in assets/blog/ (resolved via import.meta.glob);
 // `video` is a YouTube ID for talk posts.
 const blog = defineCollection({

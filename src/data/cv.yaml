@@ -87,7 +87,7 @@ sections:
         cover: "PNAS_2025.png"
         figure: "PNAS_2025_figure.png"
         figureCaption: "Evolved vancomycin-intermediate *Staphylococcus aureus* (VISA) lines exhibit diverging collateral sensitivity to cefazolin and nafcillin."
-        blurb: "*Staphylococcus aureus* evolved vancomycin resistance by at least two mutually exclusive genetic routes — each leaving a distinct, partly predictable pattern of collateral sensitivity to second-line drugs. This work introduces the Collateral Response Score."
+        blurb: "*Staphylococcus aureus* evolved vancomycin resistance by at least two mutually exclusive genetic routes, each leaving a distinct, predictable pattern of collateral sensitivity to second-line drugs. This work introduces the Collateral Response Score."
       - authors:
           - { name: "Gopalakrishnan V.", equal: true }
           - { name: "Crozier D.", mentee: true, equal: true }
@@ -172,7 +172,7 @@ sections:
         cover: "Evolution_2021.png"
         figure: "Evolution_2021_figure.png"
         figureCaption: "Fitnesses of tetracycline-resistant mutants relative to their LTEE parental strains."
-        blurb: "The fitness cost of a tetracycline-resistance mutation depended idiosyncratically on the genome it arose in — a complication for strategies that assume resistance always carries a predictable price."
+        blurb: "The fitness cost of a tetracycline-resistance mutation depended idiosyncratically on the genome in which it arose, a complication for strategies that assume resistance always carries a predictable price."
       - authors:
           - { name: "Card K.J.", role: "first" }
           - "Thomas M."
@@ -190,7 +190,7 @@ sections:
         cover: "PNAS_2021.png"
         figure: "PNAS_2021_figure.png"
         figureCaption: "Specificity of genomic evolution with respect to genetic background."
-        blurb: "Identical selection drove different *E. coli* backgrounds down different mutational routes to resistance — showing that genetic history shapes not just whether resistance evolves, but which genes carry it."
+        blurb: "Identical selection drove different *E. coli* backgrounds down different mutational routes to resistance, showing that genetic history shapes not just whether resistance evolves, but which genes carry it."
       - authors:
           - { name: "Card K.J.", role: "first" }
           - { name: "LaBar T." }
@@ -207,7 +207,7 @@ sections:
         cover: "PLOS_Biology_2019.png"
         figure: "PLOS_Biology_2019_figure.png"
         figureCaption: "Genetic background affects the evolvability of LTEE lines exposed to antibiotics."
-        blurb: "After decades of evolving without antibiotics, replicate *E. coli* lines differed in how readily they could evolve resistance — early evidence that a population's deep history constrains its future adaptability."
+        blurb: "After decades of evolving without antibiotics, replicate *E. coli* lines differed in how readily they could evolve resistance, providing early evidence that a population's history constrains its future adaptability."
       - authors:
           - "Lenski R.E."
           - "Wiser M.J."
