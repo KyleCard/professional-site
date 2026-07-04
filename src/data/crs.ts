@@ -40,10 +40,37 @@ export interface CrsConfig {
   context: {
     /** Two context sliders, each 0 → 1 (left label → right label). */
     axes: { id: string; label: string; from: string; to: string }[];
-    /** Illustrative drug whose confident lab CRS drifts toward 0 (uncertain)
+    /** Illustrative drug whose confident lab CRS shifts toward 0 (uncertain)
      *  as the context becomes host-like / inflamed. `pull` = how strongly each
      *  axis (at value 1) drags CRS toward 0, in [0,1]. */
     example: { drug: string; baseCrs: number; pull: number[] };
+  };
+
+  /** Layer 5 — is the shift itself predictable? (smooth vs rugged reaction norms)
+   *  Two topographies over the SAME (env x, inflammation y) ∈ [0,1]² domain as
+   *  Layer 4, reusing its axis labels. The surface elevation is CRS:
+   *
+   *      surface(x,y) = start + (end − start)·((x+y)/2)          ← the smooth plane
+   *                   + ruggedness · Σ amp·sin(kxπx)·sin(kyπy)   ← boundary-zero ripple
+   *
+   *  Each ripple mode is zero on the whole unit-square boundary (sin(kπ·0)=
+   *  sin(kπ·1)=0), so BOTH pathways share the exact CRS at the start corner
+   *  (0,0 = lab medium, low inflammation) and the far corner (1,1 = chip, high
+   *  inflammation) — the shared-endpoints constraint — while differing entirely
+   *  in the path between. Pathway 1 uses ruggedness 0 (a smooth basin); Pathway 2
+   *  adds the ripples (ridges + local reversals). Values clamp to [−1, 1].
+   *  Tune `ripples`/`ruggedness` freely; endpoints stay pinned by construction. */
+  layer5: {
+    /** CRS at the start corner (lab medium, low inflammation). */
+    start: number;
+    /** CRS at the far corner (airway-on-chip, high inflammation). */
+    end: number;
+    /** Ripple modes; each vanishes on the domain boundary. */
+    ripples: { amp: number; kx: number; ky: number }[];
+    /** Per-pathway ripple multiplier (aligned to `pathways`): 0 = smooth. */
+    ruggedness: number[];
+    /** The diagonal walk from start corner to far corner (number of steps). */
+    walk: { steps: number };
   };
 }
 
@@ -85,9 +112,25 @@ export const CRS: CrsConfig = {
 
   context: {
     axes: [
-      { id: "env", label: "Environment", from: "Lab media", to: "Airway-on-chip" },
+      { id: "env", label: "Environment", from: "Lab medium", to: "Airway-on-chip" },
       { id: "inflam", label: "Inflammation", from: "Low", to: "High" },
     ],
     example: { drug: "Drug A", baseCrs: -0.7, pull: [0.55, 0.5] },
+  },
+
+  // Both pathways run −0.70 (confident sensitivity in lab medium) → 0.00
+  // (uncertain, in the inflamed chip). Pathway 1 gets there on a straight ramp;
+  // Pathway 2 takes the identical endpoints but a ridged, reversing route.
+  layer5: {
+    start: -0.7,
+    end: 0.0,
+    ripples: [
+      { amp: 0.30, kx: 2, ky: 1 },
+      { amp: 0.22, kx: 1, ky: 3 },
+      { amp: 0.18, kx: 3, ky: 2 },
+      { amp: 0.13, kx: 3, ky: 3 },
+    ],
+    ruggedness: [0, 1], // Pathway 1 smooth, Pathway 2 rugged
+    walk: { steps: 24 },
   },
 };

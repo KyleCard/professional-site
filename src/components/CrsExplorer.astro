@@ -4,6 +4,8 @@ import {
   renderPlot, renderTrack, readout, tallyRows, renderProfileRows,
   renderDensity, densityStats, genComponents, type MixComp,
   renderFieldBg, renderFieldMarker, localCrs, fmtCRS,
+  renderSurface, renderWalkTrail, walkValues, walkVolatility, walkReading, RUGGED_EPS,
+  surfaceAt, renderChartAxes, renderChartTraces,
 } from "../scripts/crs-core";
 
 // ---- Layer 1 server render (no-JS / pre-hydration fallback) ----
@@ -41,15 +43,31 @@ const cHost = fmtCRS(localCrs(1, 1, ex));  // host-like corner (≈ 0)
 const fComps0 = genComponents(localCrs(0, 0, ex));
 const fdens0 = renderDensity(fComps0, localCrs(0, 0, ex));
 const fread0 = densityStats(fComps0).reading;
+
+// ---- Layer 5: predictability of the shift (drag a marker along the path) ----
+const l5 = CRS.layer5;
+const l5axes = CRS.context.axes;
+const surf5 = [0, 1].map((pw) => renderSurface(l5, pw, l5axes));
+const trail5 = [0, 1].map((pw) => renderWalkTrail(l5, pw, 1)); // no-JS twin: full static trail
+const chartAxes5 = renderChartAxes(l5, l5axes);
+const chartBoth5 = renderChartTraces(l5, 0, 1, 1);   // no-JS: both pathways traced in full
+const markerInit5 = renderWalkTrail(l5, 0, 0);       // interactive: marker at the start corner
+const chartInit5 = renderChartTraces(l5, 0, 0, 0);   // interactive: nothing traced yet
+const startVal5 = fmtCRS(surfaceAt(0, 0, l5, 0));
+const l5tags = [0, 1].map((pw) => ({
+  label: CRS.pathways[pw].label,
+  rugged: walkVolatility(walkValues(l5, pw)) > RUGGED_EPS,
+  reading: walkReading(l5, pw),
+}));
 ---
 <section class="crs" aria-labelledby="crs-h">
   <div class="wrap">
     <p class="card-lab mono reveal">The Card Lab · interactive</p>
-    <h2 class="title crs-title reveal" id="crs-h">Will the next drug still <span class="peak">work?</span></h2>
+    <h2 class="title crs-title reveal" id="crs-h">Will the next drug <span class="peak">work?</span></h2>
     <p class="crs-intro measure reveal">
       When a pathogen evolves resistance to one antibiotic, its susceptibility to others can change. The
-      <strong>Collateral Response Score</strong> captures the <em>direction</em> of that change (its sign)
-      and its <em>predictability</em> (its magnitude).
+      <strong>Collateral Response Score</strong> captures the <em>direction</em> of that change
+      and its <em>predictability</em>.
     </p>
 
     <div class="crs-card reveal">
@@ -62,16 +80,22 @@ const fread0 = densityStats(fComps0).reading;
           <span class="crs-tab-n mono">03</span> Distribution</button>
         <button role="tab" id="crs-tab-4" aria-controls="crs-panel-4" aria-selected="false" tabindex="-1" class="crs-tab" type="button">
           <span class="crs-tab-n mono">04</span> Context</button>
+        <button role="tab" id="crs-tab-5" aria-controls="crs-panel-5" aria-selected="false" tabindex="-1" class="crs-tab" type="button">
+          <span class="crs-tab-n mono">05</span> Reliability</button>
       </div>
 
       <!-- ───────── PANEL 1 · Layer 1 calculator ───────── -->
       <div role="tabpanel" id="crs-panel-1" aria-labelledby="crs-tab-1" class="crs-panel" data-crs-root>
         <h3 class="crs-panel-h">Live CRS calculator</h3>
-        <p class="crs-howto mono" id="crs-howto">
-          <strong>See how the CRS is calculated</strong>. Each dot below is a replicate population, evolved separately and measured against a second drug.
-          Drag the dots — or focus one and press <kbd>↑</kbd> <kbd>↓</kbd> — and watch the score respond. 
+        <p class="crs-lead">
+          <strong>See how the CRS is calculated.</strong> Each dot below represents a replicate population, evolved separately and measured
+          against a second drug. The CRS captures the overall <em>direction</em> of change in 
+          second-line drug susceptibility relative to the ancestor (sign) and the <em>predictability</em> of that change (magnitude).
           Notice that a given score can arise in two very different ways: when populations are split between resistance and sensitivity, 
           or when there is consistent change across replicates. Toggle between the Worked Example and Full Agreement presets to observe this distinction.
+        </p>
+        <p class="crs-howto mono" id="crs-howto">
+          Tip: Drag the dots, or focus a dot and nudge it with <kbd>↑</kbd> <kbd>↓</kbd>, to watch the score respond. Use the <kbd>−</kbd> <kbd>+</kbd> buttons to change the replicate count.
         </p>
 
         <div class="crs-grid">
@@ -116,12 +140,13 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 2 · Layer 2 pathway profile ───────── -->
       <div role="tabpanel" id="crs-panel-2" aria-labelledby="crs-tab-2" class="crs-panel" data-crs-pathways>
         <h3 class="crs-panel-h">Pathway collateral profile</h3>
-        <p class="crs-howto mono">
-        <strong>The same drug, two different outcomes</strong>. A population may evolve antibiotic resistance through different 
-        genetic pathways. Its collateral response to other drugs can change depending on which route the population takes. 
-        Toggle between two evolutionary pathways below and watch the collateral profile invert across several second-line drugs: 
-        knowing <em>how</em> resistance evolved is often as useful as knowing <em>that</em> it evolved.
-        
+        <p class="crs-lead">
+          <strong>The same drug, two different outcomes.</strong> A population may evolve antibiotic resistance through different 
+          genetic pathways. Its collateral response to other drugs can change depending on which route the population takes. 
+          Toggle between two evolutionary pathways below and watch the collateral profile invert across several second-line drugs:
+          knowing <em>how</em> resistance evolved is often as useful as knowing <em>that</em> it evolved.
+        </p>
+
         <!-- interactive (revealed by JS) -->
         <div class="crs-pwrap" hidden>
           <div class="crs-toggle" role="radiogroup" aria-label="Evolutionary pathway">
@@ -144,12 +169,12 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 3 · Layer 3 distribution ───────── -->
       <div role="tabpanel" id="crs-panel-3" aria-labelledby="crs-tab-3" class="crs-panel" data-crs-dist>
         <h3 class="crs-panel-h">CRS as a distribution</h3>
-        <p class="crs-howto mono">
-        <strong>A single number can hide how sure we really are</strong>. Each CRS value is an estimate, not a verdict, because it is
-        drawn from a limited sample of replicates that could have landed differently by chance. Resampling gives a distribution, with its
-        <em>width</em> providing actionable information: narrow and far from zero is a confident call; wide, or straddling
-        zero, means a clinician genuinely cannot say which way evolution will go. The shape of the distribution below 
-        is often more informative than the number itself.</p>
+        <p class="crs-lead">
+          <strong>A single number can obscure how sure we really are.</strong> Each CRS value is an estimate, not a verdict,
+          because it is drawn from a limited sample of replicates that could have landed differently by chance. Resampling
+          gives a distribution, with its <em>width</em> providing actionable information: narrow and far from zero is a confident
+          call; wide, or straddling zero, means a clinician genuinely cannot say which way evolution will go. The shape of
+          the distribution is often more informative than the number itself.</p>
 
         <!-- interactive (revealed by JS) -->
         <div class="crs-dwrap" hidden>
@@ -188,13 +213,15 @@ const fread0 = densityStats(fComps0).reading;
       <!-- ───────── PANEL 4 · Layer 4 context landscape ───────── -->
       <div role="tabpanel" id="crs-panel-4" aria-labelledby="crs-tab-4" class="crs-panel" data-crs-context>
         <h3 class="crs-panel-h">CRS across contexts</h3>
+        <p class="crs-lead">
+          <strong>Confidence is context-dependent.</strong> 
+          A clinician's ability to predict a treatment outcome can depend on the environmental context in which evolution happens. 
+          In the preceding examples, we assumed the CRS and its distributions were measured in a simplified, laboratory environment. 
+          But a bacterium evolving inside an inflamed human airway faces different selective pressures than one evolving in a flask, 
+          and a collateral response that appears reliable in one setting may become less certain in another.
+          </p>
         <p class="crs-howto mono">
-        <strong>Predictability isn't fixed; it depends on the environmental context in which evolution happens</strong>.
-        In the preceding examples, the CRS and its distributions were measured in a simplified environment. 
-        However, a bacterium evolving inside an inflamed human airway faces different selective pressures than one evolving in a flask.
-        Thus, a collateral response that looks reliable in one setting may become far less certain in another. This is the open question 
-        motivating the <em>Evolution-on-a-Chip</em> platform. Drag the marker — or focus it and press <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> — 
-        to see, conceptually, how context could reshape what we think we know.</p>
+          Tip: Drag the marker across the field, or focus it and use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>.</p>
 
         <div class="crs-fgrid">
           <div class="crs-field-wrap">
@@ -220,15 +247,109 @@ const fread0 = densityStats(fComps0).reading;
 
             <!-- no-JS fallback: the two labelled sample points -->
             <div class="crs-ffallback">
-              <p class="crs-fsample"><span class="crs-fkey mono">Lab media · low inflammation</span> → CRS <b>{cLab}</b> — a confident, actionable call.</p>
+              <p class="crs-fsample"><span class="crs-fkey mono">Lab medium · low inflammation</span> → CRS <b>{cLab}</b> — a confident, actionable call.</p>
               <p class="crs-fsample"><span class="crs-fkey mono">Airway-on-chip · high inflammation</span> → CRS <b>{cHost}</b> — predictability collapses.</p>
             </div>
           </div>
         </div>
 
-        <p class="crs-pcap">One would confidently conclude that a population is collaterally sensitive to {ex.drug} in lab
-          media (CRS {cLab}). However, as the environment becomes more host-like and inflamed, that confidence drifts toward zero. Using the <strong>Evolution-on-a-Chip</strong> platform,
-          in which host-like microenvironments are monitored via real-time sensors, we will investigate whether and how environmental context reshapes CRS.</p>
+        <p class="crs-pcap">
+        In the illustration above, a population appears confidently collaterally sensitive to an antibiotic in a standard lab medium (CRS = {cLab}). 
+        However, as the environment becomes more host-like and inflamed, that confidence trends toward zero. 
+        The <strong>Evolution-on-a-Chip platform</strong>, which monitors host-like microenvironments in real time using sensors, is designed to investigate whether and 
+        how environmental context reshapes CRS.
+        </p>
+      </div>
+
+      <!-- ───────── PANEL 5 · Layer 5 predictability of the shift ───────── -->
+      <div role="tabpanel" id="crs-panel-5" aria-labelledby="crs-tab-5" class="crs-panel" data-crs-shift>
+        <h3 class="crs-panel-h">Is the shift itself predictable?</h3>
+        <p class="crs-lead">
+          <strong> Is the change in CRS <em>predictable</em> or <em>idiosyncratic</em> across an environmental gradient?</strong> 
+          This question arises from two key points already established: (i.) an infection’s response to a second 
+          antibiotic depends on the genetic pathway the population took as it evolved resistance against a first-line agent, 
+          and (ii.) that response can also shift across an environmental gradient. Confidence that a given treatment will 
+          work (captured by the CRS) can depend on both.
+        </p>
+        <p class="crs-lead">
+          Below, observe how a population's collateral response changes as the conditions shift from a standard lab medium to a fully host-like, 
+          inflamed environment. For populations that evolved along Pathway 1, the change in CRS is predictable with a steady, uniform increase. 
+          For Pathway 2 populations, an identical environmental shift leads to idiosyncratic outcomes: the CRS increases,
+          reverses direction, and then increases again. Using the <strong>Evolution-on-a-Chip</strong> platform, we will assess how reliably 
+          treatment predictions hold across changing conditions.
+        </p>
+        <p class="crs-howto mono">
+          Tip: Drag the marker along the diagonal from lab medium (bottom-left) toward the inflamed airway-on-chip (top-right);
+          the chart traces the score as you go. Focus the marker and step with <kbd>←</kbd> <kbd>→</kbd>. Switch pathways to
+          overlay both traces.
+        </p>
+
+        <!-- interactive (revealed by JS): one surface + a live-building chart -->
+        <div class="crs-dwrap2" hidden>
+          <div class="crs-toggle" role="radiogroup" aria-label="Evolutionary pathway">
+            <button type="button" role="radio" aria-checked="true" class="crs-pw-btn active" data-dw-pw="0">Pathway 1</button>
+            <button type="button" role="radio" aria-checked="false" tabindex="-1" class="crs-pw-btn" data-dw-pw="1">Pathway 2</button>
+          </div>
+
+          <div class="crs-shiftgrid">
+            <figure class="crs-spanel">
+              <figcaption class="crs-scap">
+                <span class="crs-pcol-h mono" id="crs-dw-plabel">{l5tags[0].label}</span>
+                <span class={`crs-stag ${l5tags[0].rugged ? "rugged" : "smooth"}`} id="crs-dw-ptag">{l5tags[0].rugged ? "rugged" : "smooth"}</span>
+              </figcaption>
+              <svg class="crs-surface-svg" id="crs-dw-surf" viewBox="0 0 380 360" role="group"
+                aria-label="Predictability surface. Drag the marker along the diagonal path from the lab-media corner to the inflamed-chip corner.">
+                <g class="crs-surf-layer" id="crs-dw-surflayer" set:html={surf5[0]} />
+                <g class="crs-walk-g" id="crs-dw-marker" set:html={markerInit5} />
+              </svg>
+            </figure>
+
+            <figure class="crs-chartfig">
+              <figcaption class="crs-pcol-h mono">CRS along the path</figcaption>
+              <svg class="crs-chart-svg" id="crs-dw-chart" viewBox="0 0 380 300" role="img"
+                aria-label="Line chart of the Collateral Response Score along the path from a lab medium, uninflamed, to the airway-on-chip, inflamed.">
+                <g class="crs-chart-axes" set:html={chartAxes5} />
+                <g class="crs-chart-traces" id="crs-dw-traces" set:html={chartInit5} />
+              </svg>
+            </figure>
+          </div>
+
+          <div class="crs-dw-foot">
+            <p class="crs-dw-readout"><span class="crs-cap mono">Current CRS</span><span class="crs-dw-val" id="crs-dw-val">{startVal5}</span></p>
+            <button type="button" class="crs-dw-reset" id="crs-dw-reset">Reset traces</button>
+          </div>
+          <p class="visually-hidden" aria-live="polite" id="crs-dw-live"></p>
+        </div>
+
+        <!-- no-JS fallback: both surfaces + both full traces on the chart -->
+        <div class="crs-shiftfallback">
+          <div class="crs-twin">
+            {l5tags.map((p, pw) => (
+              <figure class="crs-spanel">
+                <figcaption class="crs-scap"><span class="crs-pcol-h mono">{p.label}</span>
+                  <span class={`crs-stag ${p.rugged ? "rugged" : "smooth"}`}>{p.rugged ? "rugged" : "smooth"}</span></figcaption>
+                <svg class="crs-surface-svg" viewBox="0 0 380 360" role="img" aria-label={`Predictability surface, ${p.label}, with the full diagonal path drawn.`}>
+                  <g set:html={surf5[pw]} /><g set:html={trail5[pw]} />
+                </svg>
+              </figure>
+            ))}
+          </div>
+          <figure class="crs-chartfig">
+            <figcaption class="crs-pcol-h mono">CRS along the path — both pathways</figcaption>
+            <svg class="crs-chart-svg" viewBox="0 0 380 300" role="img"
+              aria-label="Both pathways' Collateral Response Score traced along the full path; same endpoints, different reliability.">
+              <g set:html={chartAxes5} /><g set:html={chartBoth5} />
+            </svg>
+            <p class="crs-clegend mono"><span class="crs-lg-active">■ {l5tags[0].label}</span> · <span class="crs-lg-ghost">■ {l5tags[1].label}</span></p>
+          </figure>
+        </div>
+
+        <p class="crs-pcap">
+          In the illustration above, both journeys begin and end at the same score. For <strong>Pathway 1</strong> evolved populations, there is a steady, 
+          predictable slope as the environmental gradient changes (from CRS −0.70 → 0.00). For <strong>Pathway 2</strong> evolved populations, the path 
+          is idiosyncratic: small context shifts swing the score despite the same endpoints. 
+          Same destination, very different reliability. We will investigate that reliability using the <strong>Evolution-on-a-Chip</strong> platform.
+        </p>
       </div>
     </div>
   </div>
@@ -261,6 +382,11 @@ const fread0 = densityStats(fComps0).reading;
   .crs-panel + .crs-panel { margin-top: var(--s-6); }
   .crs-card.js-tabs .crs-panel + .crs-panel { margin-top: 0; }
 
+  /* finalized intro prose that sits above each layer's interactive */
+  .crs-lead { color: var(--ink-soft); font-size: 1.05rem; line-height: 1.6; margin-bottom: var(--s-3); max-width: 64ch; }
+  .crs-lead strong { color: var(--ink); font-weight: 600; }
+  .crs-lead em { font-style: italic; color: var(--teal); }
+  /* small utility "how to interact" microcopy (kept distinct from the verbatim intro) */
   .crs-howto { color: var(--slate); margin-bottom: var(--s-4); text-transform: none; letter-spacing: .02em; line-height: 1.5; }
   .crs-howto kbd { font-family: var(--font-mono); background: var(--paper); border: 1px solid var(--rule);
     border-radius: 3px; padding: 0 5px; font-size: .85em; }
@@ -399,12 +525,67 @@ const fread0 = densityStats(fComps0).reading;
   .crs-fsample b { color: var(--ink); font-family: var(--font-mono); }
   .crs-fkey { display: block; color: var(--teal); font-size: .74rem; letter-spacing: .04em; margin-bottom: 2px; }
 
+  /* ---- Layer 5 (predictability of the shift) ---- */
+  .crs-twin { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 34px); align-items: start; }
+  .crs-spanel { margin: 0; display: flex; flex-direction: column; }
+  .crs-scap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; margin-bottom: 8px; }
+  .crs-stag { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 100px; border: 1px solid var(--rule); color: var(--slate); }
+  .crs-stag.smooth { border-color: color-mix(in srgb, var(--teal) 45%, var(--rule)); color: var(--teal); }
+  .crs-stag.rugged { border-color: color-mix(in srgb, var(--amber-deep) 45%, var(--rule)); color: var(--amber-deep); }
+  .crs-surface-svg { width: 100%; max-width: 380px; height: auto; display: block; touch-action: none; }
+  .crs-surface-svg :global(.crs-scontour) { stroke: color-mix(in srgb, var(--ink) 32%, transparent); stroke-width: 1; fill: none; }
+  .crs-surface-svg :global(.crs-scontour.zero) { stroke: var(--ink); stroke-width: 1.7; stroke-dasharray: 5 4; }
+  .crs-surface-svg :global(.crs-fframe) { fill: none; stroke: var(--ink); stroke-width: 1.3; }
+  .crs-surface-svg :global(.crs-faxis) { font-family: var(--font-mono); font-size: 10px; letter-spacing: .02em; fill: var(--slate); }
+  .crs-surface-svg :global(.crs-diagguide) { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 4; opacity: .35; }
+  .crs-surface-svg :global(.crs-wtrail) { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    paint-order: stroke; }
+  .crs-surface-svg :global(.crs-walker) { cursor: grab; }
+  .crs-surface-svg :global(.crs-walker:focus-visible) { outline: none; }
+  .crs-surface-svg :global(.crs-walker:focus-visible .crs-walker-halo) { stroke: var(--focus); stroke-width: 3; opacity: 1; }
+  .crs-surface-svg :global(.crs-walker-halo) { fill: var(--paper-panel); stroke: var(--paper-panel); stroke-width: 2; opacity: .92; }
+  .crs-surface-svg :global(.crs-walker-dot) { stroke: var(--ink); stroke-width: 2; }
+
+  /* drag layout: surface + live chart side by side (stacks on mobile) */
+  .crs-dwrap2[hidden], .crs-shiftfallback[hidden] { display: none; }
+  .crs-shiftgrid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 32px); align-items: start; margin-top: var(--s-2); }
+  .crs-chartfig { margin: 0; display: flex; flex-direction: column; }
+  .crs-chartfig .crs-pcol-h { margin-bottom: 8px; }
+  .crs-chart-svg { width: 100%; max-width: 400px; height: auto; display: block; }
+  .crs-chart-svg :global(.crs-caxis) { stroke: var(--ink-soft); stroke-width: 1.2; }
+  .crs-chart-svg :global(.crs-czero) { stroke: var(--slate); stroke-width: 1; stroke-dasharray: 3 3; }
+  .crs-chart-svg :global(.crs-clab) { font-family: var(--font-mono); font-size: 10px; fill: var(--slate); }
+  .crs-chart-svg :global(.crs-ctitle) { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; fill: var(--slate); }
+  .crs-chart-svg :global(.crs-cxlab) { font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; fill: var(--slate); }
+  /* ghost = the other pathway's trace: solid + muted teal, so it reads distinctly
+     from both the dark active trace and the dashed CRS = 0 line */
+  .crs-chart-svg :global(.crs-tghost) { stroke: var(--teal); stroke-width: 2; opacity: .5;
+    stroke-linecap: round; stroke-linejoin: round; }
+  .crs-chart-svg :global(.crs-tactive) { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .crs-dw-foot { display: flex; align-items: center; justify-content: center; gap: var(--s-4) var(--s-5); flex-wrap: wrap; margin-top: var(--s-4); }
+  .crs-dw-readout { display: inline-flex; align-items: baseline; gap: 10px; margin: 0; }
+  .crs-dw-readout .crs-cap { margin: 0; }
+  .crs-dw-val { font-family: var(--font-display); font-weight: 500; line-height: 1; color: var(--ink);
+    font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem); }
+  .crs-dw-reset { padding: 8px 16px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink-soft);
+    border-radius: var(--radius); font-size: .85rem; cursor: pointer; font-family: var(--font-body); transition: border-color .2s, color .2s; }
+  .crs-dw-reset:hover { border-color: var(--teal); color: var(--teal); }
+  .crs-clegend { font-size: .7rem; color: var(--slate); margin-top: 6px; }
+  .crs-lg-active { color: var(--ink); }
+  .crs-lg-ghost { color: var(--teal); }
+
   @media (max-width: 760px) {
     .crs-grid { grid-template-columns: 1fr; grid-template-areas: "plot" "out" "ctrl"; gap: var(--s-4); }
     .crs-side { align-self: stretch; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: var(--s-3); }
     .crs-plot { max-width: 340px; }
     .crs-fgrid { grid-template-columns: 1fr; }
     .crs-fside { align-self: stretch; }
+    .crs-twin { grid-template-columns: 1fr; gap: var(--s-5); }
+    .crs-shiftgrid { grid-template-columns: 1fr; gap: var(--s-4); }
+    .crs-spanel { align-items: center; }
+    .crs-chartfig { align-items: center; }
     /* four tabs no longer fit one row at ~390px — wrap instead of overflowing */
     .crs-tabs { flex-wrap: wrap; gap: 0 2px; }
     .crs-tab { flex: 1 0 auto; justify-content: center; padding: 10px 12px; }
@@ -423,6 +604,7 @@ const fread0 = densityStats(fComps0).reading;
     renderDensity, densityStats, genComponents,
     valueToY, yToValue, valueText, clamp, snap, crsToTrackX, crsMiniX, fmtCRS, PLOT,
     renderFieldMarker, localCrs, fieldColor, clamp01, fieldX, fieldY, xToEnv, yToInflam, FIELD,
+    walkValues, walkVolatility, surfaceAt, surfaceColor, diagTFromXY, renderSurface, renderChartTraces,
   } from "../scripts/crs-core";
 
   // ── accessible tabs ──────────────────────────────────────────────
@@ -688,6 +870,99 @@ const fread0 = densityStats(fComps0).reading;
     }
   }
 
+  // ── Layer 5: drag a marker along the path; live chart + ghost trace ──
+  class DragWalk {
+    cfg = CRS.layer5; n = CRS.layer5.walk.steps; axes = CRS.context.axes;
+    tags = [0, 1].map((pw) => walkVolatility(walkValues(CRS.layer5, pw)) > 0.02);
+    surfSvg: SVGSVGElement; surfLayer: HTMLElement; markerG: HTMLElement; tracesG: HTMLElement;
+    valEl: HTMLElement; live: HTMLElement; plabel: HTMLElement; ptag: HTMLElement; pwBtns: HTMLElement[];
+    trailPath!: SVGPathElement; walkerG!: SVGGElement; walkerDot!: SVGCircleElement;
+    active = 0; t = [0, 0];
+    constructor(panel: HTMLElement) {
+      panel.querySelector<HTMLElement>(".crs-shiftfallback")!.hidden = true;
+      panel.querySelector<HTMLElement>(".crs-dwrap2")!.hidden = false;
+      this.surfSvg = panel.querySelector("#crs-dw-surf")!;
+      this.surfLayer = panel.querySelector("#crs-dw-surflayer")!;
+      this.markerG = panel.querySelector("#crs-dw-marker")!;
+      this.tracesG = panel.querySelector("#crs-dw-traces")!;
+      this.valEl = panel.querySelector("#crs-dw-val")!;
+      this.live = panel.querySelector("#crs-dw-live")!;
+      this.plabel = panel.querySelector("#crs-dw-plabel")!;
+      this.ptag = panel.querySelector("#crs-dw-ptag")!;
+      this.pwBtns = [...panel.querySelectorAll<HTMLElement>("[data-dw-pw]")];
+      this.grabMarker();
+      this.pwBtns.forEach((b, i) => {
+        b.addEventListener("click", () => this.setPathway(i, false));
+        b.addEventListener("keydown", (e) => {
+          const nx = e.key === "ArrowRight" || e.key === "ArrowDown" ? i + 1
+            : e.key === "ArrowLeft" || e.key === "ArrowUp" ? i - 1 : -1;
+          if (nx < 0) return; e.preventDefault(); this.setPathway((nx + 2) % 2, true);
+        });
+      });
+      panel.querySelector("#crs-dw-reset")!.addEventListener("click", () => this.reset());
+      this.surfSvg.addEventListener("pointerdown", (e) => this.startDrag(e));
+      this.draw(false);
+    }
+    grabMarker() {
+      this.trailPath = this.markerG.querySelector(".crs-wtrail")!;
+      this.walkerG = this.markerG.querySelector(".crs-walker")!;
+      this.walkerDot = this.markerG.querySelector(".crs-walker-dot")!;
+      this.walkerG.setAttribute("tabindex", "0");
+      this.walkerG.setAttribute("role", "slider");
+      this.walkerG.setAttribute("aria-label", "Marker position along the path from a lab medium to the inflamed chip");
+      this.walkerG.setAttribute("aria-valuemin", "0");
+      this.walkerG.setAttribute("aria-valuemax", "1");
+      this.walkerG.addEventListener("keydown", (e) => this.onKey(e as KeyboardEvent));
+    }
+    tFromEvent(e: PointerEvent) {
+      const r = this.surfSvg.getBoundingClientRect();
+      return diagTFromXY(((e.clientX - r.left) / r.width) * FIELD.w, ((e.clientY - r.top) / r.height) * FIELD.h);
+    }
+    startDrag(e: PointerEvent) {
+      e.preventDefault(); this.t[this.active] = this.tFromEvent(e); this.draw(false);
+      this.walkerG.focus?.(); this.surfSvg.setPointerCapture?.(e.pointerId);
+      const move = (ev: PointerEvent) => { this.t[this.active] = this.tFromEvent(ev); this.draw(false); };
+      const up = () => {
+        this.surfSvg.releasePointerCapture?.(e.pointerId);
+        this.surfSvg.removeEventListener("pointermove", move);
+        this.surfSvg.removeEventListener("pointerup", up);
+        this.draw(true);
+      };
+      this.surfSvg.addEventListener("pointermove", move);
+      this.surfSvg.addEventListener("pointerup", up);
+    }
+    onKey(e: KeyboardEvent) {
+      const s = 1 / this.n; let t = this.t[this.active];
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") t += s;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowDown") t -= s;
+      else if (e.key === "Home") t = 0; else if (e.key === "End") t = 1; else return;
+      e.preventDefault(); this.t[this.active] = Math.max(0, Math.min(1, t)); this.draw(true);
+    }
+    setPathway(i: number, focus: boolean) {
+      this.active = i;
+      this.pwBtns.forEach((b, j) => { const sel = j === i; b.setAttribute("aria-checked", sel ? "true" : "false"); b.classList.toggle("active", sel); b.tabIndex = sel ? 0 : -1; });
+      if (focus) this.pwBtns[i].focus();
+      this.surfLayer.innerHTML = renderSurface(this.cfg, i, this.axes); // swap topography
+      this.plabel.textContent = CRS.pathways[i].label;
+      this.ptag.textContent = this.tags[i] ? "rugged" : "smooth";
+      this.ptag.className = `crs-stag ${this.tags[i] ? "rugged" : "smooth"}`;
+      this.draw(true);
+    }
+    draw(announce: boolean) {
+      const tA = this.t[this.active], tG = this.t[1 - this.active];
+      const x = fieldX(tA), y = fieldY(tA), cv = surfaceAt(tA, tA, this.cfg, this.active);
+      this.trailPath.setAttribute("d", `M ${fieldX(0).toFixed(1)} ${fieldY(0).toFixed(1)} L ${x.toFixed(1)} ${y.toFixed(1)}`);
+      this.walkerG.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      this.walkerDot.setAttribute("fill", surfaceColor(cv));
+      this.tracesG.innerHTML = renderChartTraces(this.cfg, this.active, tA, tG);
+      this.valEl.textContent = fmtCRS(cv);
+      this.walkerG.setAttribute("aria-valuenow", tA.toFixed(2));
+      this.walkerG.setAttribute("aria-valuetext", `${Math.round(tA * 100)}% along the path, CRS ${fmtCRS(cv)}`);
+      if (announce) this.live.textContent = `${CRS.pathways[this.active].label}: ${Math.round(tA * 100)}% along the path. CRS ${fmtCRS(cv)}.`;
+    }
+    reset() { this.t = [0, 0]; this.draw(true); this.live.textContent = "Traces cleared."; }
+  }
+
   const card = document.querySelector<HTMLElement>(".crs-card");
   if (card) {
     new Tabs(card);
@@ -695,5 +970,6 @@ const fread0 = densityStats(fComps0).reading;
     const l2 = card.querySelector<HTMLElement>("[data-crs-pathways]"); if (l2) new PathwayProfile(l2);
     const l3 = card.querySelector<HTMLElement>("[data-crs-dist]"); if (l3) new DistributionView(l3);
     const l4 = card.querySelector<HTMLElement>("[data-crs-context]"); if (l4) new ContextField(l4);
+    const l5 = card.querySelector<HTMLElement>("[data-crs-shift]"); if (l5) new DragWalk(l5);
   }
 </script>

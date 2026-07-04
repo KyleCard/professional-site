@@ -389,3 +389,232 @@ export function renderFieldMarker(env: number, inflam: number, ex: Ex, interacti
     `</g>`
   );
 }
+
+// ===========================================================================
+//  Layer 5 — is the shift itself predictable? (smooth vs rugged surfaces)
+//  Two topographies over the same (env, inflam) domain. Both share CRS at the
+//  start corner (0,0) and far corner (1,1) — the ripple is zero on the whole
+//  boundary — so the pathways agree on destination but differ in the reliability
+//  of the path. A diagonal walk (0,0)→(1,1) reads smooth under Pathway 1 and
+//  lurches under Pathway 2 despite identical endpoints: that felt contrast is
+//  the whole lesson. Surface rendered as a hypsometric heatmap + iso-CRS
+//  contours (marching squares); the walk trail/marker animates over the top.
+// ===========================================================================
+type L5 = CrsConfig["layer5"];
+
+// diverging elevation tint: cool (sensitivity) ← pale (uncertain, 0) → warm
+// (resistance). Contours + numeric readout carry the sign too (never colour-only).
+export function surfaceColor(crs: number): string {
+  const c = Math.max(-1, Math.min(1, crs));
+  return c < 0
+    ? lerp3(FIELD_PALE, FIELD_DEEP_COOL, Math.min(1, -c / 0.85))
+    : lerp3(FIELD_PALE, FIELD_DEEP_WARM, Math.min(1, c / 0.85));
+}
+
+const ripple = (x: number, y: number, cfg: L5) =>
+  cfg.ripples.reduce((s, r) => s + r.amp * Math.sin(r.kx * Math.PI * x) * Math.sin(r.ky * Math.PI * y), 0);
+
+export function surfaceAt(x: number, y: number, cfg: L5, pw: number): number {
+  const plane = cfg.start + (cfg.end - cfg.start) * ((x + y) / 2);
+  const v = plane + (cfg.ruggedness[pw] ?? 0) * ripple(x, y, cfg);
+  return Math.max(-1, Math.min(1, v));
+}
+
+// CRS sampled along the diagonal walk (length steps+1). Endpoints identical
+// across pathways by construction.
+export function walkValues(cfg: L5, pw: number): number[] {
+  const n = cfg.walk.steps, out: number[] = [];
+  for (let k = 0; k <= n; k++) { const t = k / n; out.push(surfaceAt(t, t, cfg, pw)); }
+  return out;
+}
+
+// mean |second difference| along the walk — 0 for a straight ramp, larger for a
+// ridged one. Used to tag a whole path "smooth/steady" vs "rugged/volatile".
+export function walkVolatility(vals: number[]): number {
+  let s = 0, m = 0;
+  for (let k = 1; k < vals.length - 1; k++) { s += Math.abs(vals[k + 1] - 2 * vals[k] + vals[k - 1]); m++; }
+  return m ? s / m : 0;
+}
+export const RUGGED_EPS = 0.02;
+// per-step "volatile" flag: does the LOCAL slope depart from the walk's overall
+// trend? Compared against the mean per-step slope so it's scale-robust (a raw
+// second difference shrinks with step count and would read steady for any n).
+export function stepVolatile(vals: number[], k: number): boolean {
+  const n = vals.length - 1;
+  if (k <= 0 || k >= n) return false;            // shared endpoints read as steady
+  const base = (vals[n] - vals[0]) / n;          // the overall trend (per step)
+  const local = (vals[k + 1] - vals[k - 1]) / 2; // central local slope (per step)
+  return Math.abs(local - base) > 1.1 * Math.max(0.02, Math.abs(base));
+}
+
+export function walkReading(cfg: L5, pw: number): string {
+  const vals = walkValues(cfg, pw);
+  const start = fmtCRS(vals[0]), end = fmtCRS(vals[vals.length - 1]);
+  return walkVolatility(vals) > RUGGED_EPS
+    ? `Same endpoints (${start} → ${end}), but the path lurches — small context shifts swing the score.`
+    : `A steady, predictable slope (${start} → ${end}).`;
+}
+
+// ---- marching squares: iso-CRS line segments at `level` over a value grid ----
+// grid[j][i] = surface value at (env = i/N, inflam = j/N). Returns segments in
+// domain coords; the caller maps them through fieldX/fieldY.
+function msSegments(grid: number[][], N: number, level: number): [Pt, Pt][] {
+  const segs: [Pt, Pt][] = [];
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const tl = grid[j][i], tr = grid[j][i + 1], br = grid[j + 1][i + 1], bl = grid[j + 1][i];
+    let idx = 0;
+    if (tl > level) idx |= 8;
+    if (tr > level) idx |= 4;
+    if (br > level) idx |= 2;
+    if (bl > level) idx |= 1;
+    if (idx === 0 || idx === 15) continue;
+    const x0 = i / N, x1 = (i + 1) / N, y0 = j / N, y1 = (j + 1) / N;
+    const top = (): Pt => [x0 + (x1 - x0) * ((level - tl) / (tr - tl)), y0];
+    const right = (): Pt => [x1, y0 + (y1 - y0) * ((level - tr) / (br - tr))];
+    const bottom = (): Pt => [x0 + (x1 - x0) * ((level - bl) / (br - bl)), y1];
+    const left = (): Pt => [x0, y0 + (y1 - y0) * ((level - tl) / (bl - tl))];
+    switch (idx) {
+      case 1: case 14: segs.push([left(), bottom()]); break;
+      case 2: case 13: segs.push([bottom(), right()]); break;
+      case 3: case 12: segs.push([left(), right()]); break;
+      case 4: case 11: segs.push([top(), right()]); break;
+      case 6: case 9: segs.push([top(), bottom()]); break;
+      case 7: case 8: segs.push([left(), top()]); break;
+      case 5: segs.push([left(), top()]); segs.push([bottom(), right()]); break;   // saddle
+      case 10: segs.push([top(), right()]); segs.push([left(), bottom()]); break;  // saddle
+    }
+  }
+  return segs;
+}
+
+// static surface: hypsometric heatmap (clipped to the frame) + iso-CRS contours
+// + frame + compact axis labels. Reuses the FIELD geometry from Layer 4.
+export function renderSurface(cfg: L5, pw: number, axes: Ctx["axes"]): string {
+  // heatmap cells (coarse; the contour lines carry the fine structure)
+  const NC = 22;
+  let cells = "";
+  for (let j = 0; j < NC; j++) for (let i = 0; i < NC; i++) {
+    const c = surfaceAt((i + 0.5) / NC, (j + 0.5) / NC, cfg, pw);
+    const sx0 = fieldX(i / NC), sx1 = fieldX((i + 1) / NC);
+    const sy1 = fieldY(j / NC), sy0 = fieldY((j + 1) / NC); // inflam grows upward on screen
+    cells += `<rect x="${sx0.toFixed(1)}" y="${sy0.toFixed(1)}" width="${(sx1 - sx0 + 0.7).toFixed(1)}" height="${(sy1 - sy0 + 0.7).toFixed(1)}" fill="${surfaceColor(c)}"/>`;
+  }
+  // value grid for contours
+  const NG = 46;
+  const grid: number[][] = [];
+  for (let j = 0; j <= NG; j++) { grid[j] = []; for (let i = 0; i <= NG; i++) grid[j][i] = surfaceAt(i / NG, j / NG, cfg, pw); }
+  let contours = "";
+  for (let L = -0.9; L <= 0.9 + 1e-9; L += 0.1) {
+    const lvl = +L.toFixed(2);
+    const zero = Math.abs(lvl) < 1e-6;
+    for (const [a, b] of msSegments(grid, NG, lvl))
+      contours += `<line class="crs-scontour${zero ? " zero" : ""}" x1="${fieldX(a[0]).toFixed(1)}" y1="${fieldY(a[1]).toFixed(1)}" x2="${fieldX(b[0]).toFixed(1)}" y2="${fieldY(b[1]).toFixed(1)}"/>`;
+  }
+  const cid = `l5clip${pw}`;
+  const frameRect = `<rect x="${FIELD.x0}" y="${FIELD.y0}" width="${FIELD.x1 - FIELD.x0}" height="${FIELD.y1 - FIELD.y0}"`;
+  const cx = ((FIELD.x0 + FIELD.x1) / 2).toFixed(1), cy = ((FIELD.y0 + FIELD.y1) / 2).toFixed(1);
+  const [ax, ay] = axes;
+  // axis labels prefixed with the variable name, to match Layer 4's field
+  const labels =
+    `<text x="${cx}" y="${FIELD.y1 + 22}" class="crs-faxis" text-anchor="middle">${esc(ax.label)}: ${esc(ax.from)} → ${esc(ax.to)}</text>` +
+    `<text transform="translate(15 ${cy}) rotate(-90)" class="crs-faxis" text-anchor="middle">${esc(ay.label)}: ${esc(ay.from)} → ${esc(ay.to)}</text>`;
+  // faint guide showing the fixed drag path (start corner → far corner)
+  const guide = `<line class="crs-diagguide" x1="${fieldX(0).toFixed(1)}" y1="${fieldY(0).toFixed(1)}" x2="${fieldX(1).toFixed(1)}" y2="${fieldY(1).toFixed(1)}"/>`;
+  return (
+    `<defs><clipPath id="${cid}">${frameRect}/></clipPath></defs>` +
+    `<g clip-path="url(#${cid})">${cells}${contours}</g>` +
+    `${frameRect} class="crs-fframe"/>` + guide + labels
+  );
+}
+
+// project an SVG-user-space point onto the fixed diagonal path and return its
+// position t ∈ [0,1] (clamped). Used to constrain the dragged marker to the path.
+export function diagTFromXY(ux: number, uy: number): number {
+  const ax = fieldX(0), ay = fieldY(0), bx = fieldX(1), by = fieldY(1);
+  const vx = bx - ax, vy = by - ay;
+  const t = ((ux - ax) * vx + (uy - ay) * vy) / (vx * vx + vy * vy);
+  return Math.min(1, Math.max(0, t));
+}
+
+// ---- Layer 5 line chart: CRS along the path (0 = start corner … 1 = far) ----
+// The chart traces live as the marker is dragged; a ghost of the other pathway
+// persists for direct comparison. Endpoints are shared (−0.70 → 0.00).
+export const CHART = { w: 380, h: 300, x0: 56, x1: 364, y0: 20, y1: 232 };
+export const chartX = (s: number) => CHART.x0 + Math.max(0, Math.min(1, s)) * (CHART.x1 - CHART.x0);
+export function chartYRange(cfg: L5): [number, number] {
+  let lo = Infinity, hi = -Infinity;
+  for (const pw of [0, 1]) for (const v of walkValues(cfg, pw)) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  return [Math.max(-1, Math.floor((lo - 0.03) * 10) / 10), Math.min(1, Math.ceil((hi + 0.03) * 10) / 10)];
+}
+const chartY = (crs: number, lo: number, hi: number) =>
+  CHART.y1 - ((crs - lo) / (hi - lo || 1)) * (CHART.y1 - CHART.y0);
+
+// polyline of CRS along the path from 0 to tEnd (empty string if nothing traced).
+function tracePath(cfg: L5, pw: number, tEnd: number, lo: number, hi: number): string {
+  if (tEnd < 1e-4) return "";
+  const M = Math.max(2, Math.round(tEnd * cfg.walk.steps * 2));
+  let d = "";
+  for (let i = 0; i <= M; i++) {
+    const s = (tEnd * i) / M;
+    d += (i ? " L " : "M ") + chartX(s).toFixed(1) + " " + chartY(surfaceAt(s, s, cfg, pw), lo, hi).toFixed(1);
+  }
+  return d;
+}
+
+// static chart scaffold (axes, zero line, endpoint labels). Rendered once.
+export function renderChartAxes(cfg: L5, axes: Ctx["axes"]): string {
+  const [lo, hi] = chartYRange(cfg);
+  const yz = chartY(0, lo, hi);
+  const frame =
+    `<line class="crs-caxis" x1="${CHART.x0}" y1="${CHART.y0}" x2="${CHART.x0}" y2="${CHART.y1}"/>` +
+    `<line class="crs-caxis" x1="${CHART.x0}" y1="${CHART.y1}" x2="${CHART.x1}" y2="${CHART.y1}"/>`;
+  const zero = lo < 0 && hi > 0
+    ? `<line class="crs-czero" x1="${CHART.x0}" y1="${yz.toFixed(1)}" x2="${CHART.x1}" y2="${yz.toFixed(1)}"/>` +
+      `<text class="crs-clab" x="${CHART.x0 - 8}" y="${(yz + 3).toFixed(1)}" text-anchor="end">0</text>`
+    : "";
+  const yl = (v: number) => `<text class="crs-clab" x="${CHART.x0 - 8}" y="${(chartY(v, lo, hi) + 3).toFixed(1)}" text-anchor="end">${fmtCRS(v)}</text>`;
+  const ytitle = `<text class="crs-ctitle" transform="translate(16 ${((CHART.y0 + CHART.y1) / 2).toFixed(1)}) rotate(-90)" text-anchor="middle">Collateral Response Score</text>`;
+  const [ax, ay] = axes;
+  const xlab =
+    `<text class="crs-cxlab" x="${CHART.x0}" y="${CHART.y1 + 20}" text-anchor="start"><tspan x="${CHART.x0}">${esc(ax.from)},</tspan><tspan x="${CHART.x0}" dy="13">uninflamed</tspan></text>` +
+    `<text class="crs-cxlab" x="${CHART.x1}" y="${CHART.y1 + 20}" text-anchor="end"><tspan x="${CHART.x1}">${esc(ax.to)},</tspan><tspan x="${CHART.x1}" dy="13">inflamed</tspan></text>`;
+  return frame + zero + yl(lo) + yl(hi) + ytitle + xlab;
+}
+
+// dynamic chart layer: ghost trace (other pathway) + active trace + marker.
+// `tActive`/`tGhost` are the traced extents (0…1) for the active/other pathway.
+export function renderChartTraces(cfg: L5, active: number, tActive: number, tGhost: number): string {
+  const [lo, hi] = chartYRange(cfg);
+  const ghost = tracePath(cfg, 1 - active, tGhost, lo, hi);
+  const line = tracePath(cfg, active, tActive, lo, hi);
+  let out = "";
+  if (ghost) out += `<path class="crs-tghost" d="${ghost}" fill="none"/>`;
+  if (line) out += `<path class="crs-tactive" d="${line}" fill="none"/>`;
+  const cv = surfaceAt(tActive, tActive, cfg, active);
+  out += `<g class="crs-cmark" transform="translate(${chartX(tActive).toFixed(1)} ${chartY(cv, lo, hi).toFixed(1)})">` +
+    `<circle r="5" fill="${surfaceColor(cv)}" stroke="var(--ink)" stroke-width="2"/></g>`;
+  return out;
+}
+
+// the walk trail + current marker, drawn from the start corner to `progress`
+// (0…1) of the diagonal. progress = 1 gives the full static trail (no-JS /
+// reduced motion). Only this group is re-rendered by the client per frame.
+export function renderWalkTrail(cfg: L5, pw: number, progress: number): string {
+  const n = cfg.walk.steps;
+  const kf = Math.max(0, Math.min(1, progress)) * n;
+  const kFull = Math.floor(kf);
+  let d = `M ${fieldX(0).toFixed(1)} ${fieldY(0).toFixed(1)}`;
+  for (let k = 1; k <= kFull; k++) d += ` L ${fieldX(k / n).toFixed(1)} ${fieldY(k / n).toFixed(1)}`;
+  const frac = kf - kFull;
+  let t: number;
+  if (kFull < n && frac > 1e-6) { t = (kFull + frac) / n; d += ` L ${fieldX(t).toFixed(1)} ${fieldY(t).toFixed(1)}`; }
+  else t = kFull / n;
+  const cv = surfaceAt(t, t, cfg, pw);
+  return (
+    `<path class="crs-wtrail" d="${d}" fill="none"/>` +
+    `<g class="crs-walker" transform="translate(${fieldX(t).toFixed(1)} ${fieldY(t).toFixed(1)})">` +
+      `<circle class="crs-walker-halo" r="9"/>` +
+      `<circle class="crs-walker-dot" r="5.5" fill="${surfaceColor(cv)}"/>` +
+    `</g>`
+  );
+}
