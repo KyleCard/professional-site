@@ -16,7 +16,7 @@ export const SITE = {
 } as const;
 
 // The downloadable CV — drop a new PDF in public/cv/ and bump this one constant.
-export const CV_PDF = "/cv/Card_062726.pdf";
+export const CV_PDF = "/cv/Card_071326.pdf";
 
 export const LINKS = {
   scholar: "https://scholar.google.com/citations?user=pi1TWfMAAAAJ&hl=en",

@@ -61,9 +61,9 @@ sections:
     title: "Peer-Reviewed Publications"
     kind: "publications"
     stats:
-      citations: "578"
-      hIndex: "7"
-      asOf: "Google Scholar, as of July 1, 2026"
+      citations: "582"
+      hIndex: "8"
+      asOf: "Google Scholar, as of July 13, 2026"
     items:
       - authors:
           - { name: "Card K.J.", role: "first", equal: true }
@@ -310,7 +310,7 @@ sections:
       - { year: "2021", venue: "Evolution Conference", type: "Selected Talk" }
       - { year: "2021", venue: "Club Evolutionary Medicine Seminar Series | Duke University", type: "Invited Talk" }
       - { year: "2019", venue: "Ecology and Evolutionary Biology (EEB) Department Seminar | University of Michigan", type: "Invited Talk" }
-      - { year: "2019", venue: "Microbial Population Biology Gordan Research Seminar", type: "Selected Talk" }
+      - { year: "2019", venue: "Microbial Population Biology Gordon Research Seminar", type: "Selected Talk" }
       - { year: "2019", venue: "Microbial Population Biology Gordon Research Conference", type: "Poster" }
       - { year: "2019", venue: "Molecular Mechanisms in Evolution Gordon Research Seminar", type: "Selected Talk" }
       - { year: "2019", venue: "Molecular Mechanisms in Evolution Gordon Research Conference", type: "Poster" }
@@ -404,17 +404,17 @@ sections:
         body: "As a member of the Clinical & Neuroscience Council, I provide strategic insights, sector expertise, and governance guidance during RNDF’s redevelopment and national expansion. We advise on organizational structure, program development, fellowship curriculum refinement, national partnership strategy, governance standards, and ethical oversight."
       - date: "2023 – Present"
         title: "Scientific Officer for Rise Up: Northeast Ohio"
-        body: "I evaluate high school student proposals and develop experiments for in-class research projects."
+        body: "I evaluate proposals from high school students and develop experiments for in-class research projects."
       - date: "2021"
         title: "Experimental Evolution Session Chair and Moderator"
         org: "Evolution Conference"
       - date: "2019 – 2020"
         title: "Diversity, Equity, and Inclusion Task Force Member"
         org: "American Society for Microbiology (ASM)"
-        body: "I was a member of a blue-ribbon Task Force with the charge to elevate and embody inclusive diversity with equity within the ASM. To this end, we comprehensively reviewed current policies and procedures to identify deficiencies within the Society that hinder DEI efforts; contracted and worked with a third-party DEI consultant – the Kaleidoscope Group – to develop a Member Perception Survey; and advanced guiding principles and vision statements to direct future work and activities, along with codifying benchmarks for success. We reported our findings and recommendations in a report presented to the Board of Directors. The full report may be found [here](https://asm.org/reports/diversity,-equity-and-inclusion-taskforce-report)."
+        body: "I was a member of a blue-ribbon Task Force charged with elevating and embodying inclusive diversity and equity within the ASM. To this end, we comprehensively reviewed current policies and procedures to identify deficiencies within the Society that hinder DEI efforts; contracted and worked with a third-party DEI consultant – the Kaleidoscope Group – to develop a Member Perception Survey; and advanced guiding principles and vision statements to direct future work and activities, along with codifying benchmarks for success. We reported our findings and recommendations in a report presented to the Board of Directors. The full report may be found [here](https://asm.org/reports/diversity,-equity-and-inclusion-taskforce-report)."
       - date: "2019 – 2020"
         title: "Member of the Select Group for Graduate Curriculum Redesign"
-        body: "Participated in the strategic planning process for the Microbiology & Molecular Genetics Department at Michigan State University, focusing on curriculum redesign. The committee members and I advocated for a shift away from a curriculum focused on teaching facts to one that emphasizes critical thinking, the nature, practice, and philosophy of science, and epistemological thinking. We met with department leaders to discuss introducing a new course, modeled after the R3 Initiative at Johns Hopkins. My colleague, Dr. Zachary Blount, now leads this initiative as the Director of Graduate Education Innovation."
+        body: "Participated in the strategic planning process for Michigan State University's Microbiology & Molecular Genetics Department, focusing on curriculum redesign. The committee members and I advocated for a shift away from a curriculum focused on teaching facts to one that emphasizes critical thinking, the nature, practice, and philosophy of science, and epistemological thinking. We met with department leaders to discuss introducing a new course, modeled after the R3 Initiative at Johns Hopkins. My colleague, Dr. Zachary Blount, now leads this initiative as the Director of Graduate Education Innovation."
       - date: "2018"
         title: "Department of Microbiology & Molecular Genetics Host for Seminar Speaker Adam Lauring"
         org: "Michigan State University"
@@ -444,27 +444,32 @@ sections:
     items:
       - title: "“Cleveland Clinic researchers develop scoring system to anticipate antibiotic resistance.”"
         outlet: "Cleveland Clinic Lerner Research Institute News"
-        date: "October 3, 2025"
+        date: "2025"
         link: "https://www.lerner.ccf.org/news/article/?title=Cleveland+Clinic+researchers+develop+scoring+system+to+anticipate+antibiotic+resistance+&id=7476f0986ae6e49d2df0060431d53cf213624b12"
         descriptor: "Feature article describing our PNAS study, including a new metric to predict antibiotic resistance."
+      - title: "“Microbiologists at Work.”"
+        outlet: "Microbe, 3rd Edition by Swanson M.S., Joyce E.A., Horak R.E.A. Washington, DC: ASM Press (2022)."
+        date: "2022"
+        link: "https://search.worldcat.org/title/Microbe/oclc/1309034185"
+        descriptor: "Profiled as a featured scientist in the “Microbiologists at Work” series, highlighting my research on the evolution of antibiotic resistance."
       - title: "“Traversing STEM with Disabilities: Spotlight on Kyle Card.”"
         outlet: "ASM Spotlight"
-        date: "December 2, 2021"
+        date: "2021"
         link: "https://asm.org/articles/2021/december/traversing-stem-with-disabilities-spotlight-on-kyl"
         descriptor: "Profile article highlighting my research and experiences."
       - title: "“Overcoming Obstacles: Scientist Excels while Dealing with Syndromes.”"
         outlet: "MSU Today"
-        date: "December 4, 2019"
+        date: "2019"
         link: "https://msutoday.msu.edu/news/2019/12/overcoming-obstacles"
         descriptor: "Profile article highlighting my research and experiences."
       - title: "The Sci-Files Podcast"
         outlet: "The Sci-Files Podcast"
-        date: "July 21, 2019"
+        date: "2019"
         link: "https://impact89fm.org/81157/podcasts/the-sci-files-07-21-2019-kyle-card-and-jasper-gomez-antibiotic-resistance/"
         descriptor: "Discussed the evolution of antibiotic resistance and mentoring alongside my mentee, Jasper Gomez."
       - title: "WKAR Radio Interview"
         outlet: "WKAR Radio"
-        date: "June 18, 2019"
+        date: "2019"
         link: "https://www.wkar.org/education/2019-06-18/msu-scientist-excels-while-dealing-with-syndromes"
         descriptor: "Discussed disability advocacy and shared my story about how I became a research scientist."
 
